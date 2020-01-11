@@ -55,7 +55,7 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     Gdiplus::Graphics oGraphics(hDC);
     Gdiplus::Pen oPen(Gdiplus::Color(255, 0, 0), 3);
     Gdiplus::RectF oRectF(10, 10, 600, 420);
-    DrawRoundRect(oGraphics, &oRectF, &oPen);
+    drawRoundRect(oGraphics, &oRectF, &oPen);
     EndPaint(hWnd, &tPaintStruct);
     return false;
   }
