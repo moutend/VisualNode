@@ -1,0 +1,8 @@
+VisualNode
+==========
+
+WIP
+
+## LICENSE
+
+MIT
