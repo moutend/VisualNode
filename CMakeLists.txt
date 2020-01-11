@@ -25,5 +25,5 @@ set(CMAKE_CXX_STANDARD 17)
 add_compile_options("/ZW")
 
 file(GLOB SOURCES "./src/*")
-add_executable(VisualNode SHARED ${SOURCES})
+add_executable(VisualNode ${SOURCES})
 target_link_libraries(VisualNode cpplogger cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_brotli_internal OleAut32.lib Gdiplus.lib)
