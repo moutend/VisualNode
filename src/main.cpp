@@ -43,6 +43,7 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   switch (uMsg) {
   case WM_CREATE: {
     CREATESTRUCT *tpCreateSt = (CREATESTRUCT *)lParam;
+    SetWindowLong(hWnd, GWL_STYLE, 0);
     ShowWindow(hWnd, SW_SHOW);
     SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64, LWA_COLORKEY);
   } break;
@@ -57,7 +58,7 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     ExtFloodFill(hDC, 0, 0, RGB(255, 255, 255), FLOODFILLSURFACE);
     // SetBkMode(hdc, TRANSPARENT);
     Gdiplus::Graphics graphics(hDC);
-    Gdiplus::Pen pen(Gdiplus::Color(0, 0, 255), 8);
+    Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255), 8);
     Gdiplus::RectF rectF(10, 10, 600, 420);
     drawRoundRect(graphics, &rectF, &pen);
     EndPaint(hWnd, &paint);
