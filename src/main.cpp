@@ -53,7 +53,7 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     PAINTSTRUCT paint;
     HDC hDC = BeginPaint(hWnd, &paint);
     HBRUSH hBrush = CreateSolidBrush(RGB(255, 0, 0));
-    SelectObject(hdc, hBrush);
+    SelectObject(hDC, hBrush);
     ExtFloodFill(hdc, 0, 0, RGB(255, 255, 255), FLOODFILLSURFACE);
     // SetBkMode(hdc, TRANSPARENT);
     Gdiplus::Graphics graphics(hDC);
