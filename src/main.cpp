@@ -72,7 +72,7 @@ int main(Platform::Array<Platform::String ^> ^ args) {
 
   wchar_t className[] = L"MainWindowClass";
   wchar_t windowName[] = L"Rendering Rounded Rectangle";
-  wchar_t *menuName{};
+  char *menuName{};
 
   ULONG_PTR gdiplusToken{};
   Gdiplus::GdiplusStartupInput gdiplusStartupInput;
