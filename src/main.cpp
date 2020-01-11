@@ -70,7 +70,7 @@ int main(Platform::Array<Platform::String ^> ^ args) {
   HWND hWnd;
   MSG msg;
 
-  wchar_t windowName[] = L"Rendering Rounded Rectangle";
+  char windowName[] = L"Rendering Rounded Rectangle";
   char className[] = "MainWindowClass";
   char *menuName{};
 
