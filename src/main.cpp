@@ -42,10 +42,10 @@ void drawRoundRect(Gdiplus::Graphics &graphics, Gdiplus::RectF *pRectF,
 LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                 LPARAM lParam) {
   switch (uMsg) {
-  case WM_CREATE:
+  case WM_CREATE: {
     CREATESTRUCT *tpCreateSt = (CREATESTRUCT *)lParam;
     ShowWindow(hWnd, SW_SHOW);
-    break;
+  } break;
   case WM_DESTROY: {
     PostQuitMessage(0);
   } break;
