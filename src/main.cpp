@@ -43,9 +43,6 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   switch (uMsg) {
   case WM_CREATE: {
     CREATESTRUCT *tpCreateSt = (CREATESTRUCT *)lParam;
-    SetWindowLong(hWnd, GWL_STYLE, WS_POPUP | WS_MINIMIZEBOX);
-    SetWindowLong(hWnd, GWL_EXSTYLE, 0);
-    SetWindowLong(hWnd, GWL_STYLE, 0);
     ShowWindow(hWnd, SW_SHOW);
     SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64, LWA_COLORKEY);
   } break;
