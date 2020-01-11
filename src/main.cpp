@@ -49,7 +49,7 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   case WM_DESTROY: {
     PostQuitMessage(0);
   } break;
-  case WM_PAINT:
+  case WM_PAINT: {
     PAINTSTRUCT tPaintStruct;
     HDC hDC = BeginPaint(hWnd, &tPaintStruct);
     Gdiplus::Graphics oGraphics(hDC);
@@ -57,6 +57,7 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     Gdiplus::RectF oRectF(10, 10, 600, 420);
     drawRoundRect(oGraphics, &oRectF, &oPen);
     EndPaint(hWnd, &tPaintStruct);
+  }
     return false;
   }
   return DefWindowProc(hWnd, uMsg, wParam, lParam);
