@@ -102,7 +102,7 @@ int main(Platform::Array<Platform::String ^> ^ args) {
   }
 
   hWnd = CreateWindowEx(WS_EX_LAYERED, wndClass.lpszClassName, windowName,
-                        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 640,
+                        WS_POPUP, CW_USEDEFAULT, CW_USEDEFAULT, 640,
                         480, nullptr, nullptr, hInstance, nullptr);
 
   while (GetMessage(&msg, nullptr, 0, 0) != 0) {
