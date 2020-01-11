@@ -1,4 +1,3 @@
-// #include <locale.h>
 #include <stdio.h>
 #include <tchar.h>
 #include <windows.h>
@@ -45,18 +44,23 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   case WM_CREATE: {
     CREATESTRUCT *tpCreateSt = (CREATESTRUCT *)lParam;
     ShowWindow(hWnd, SW_SHOW);
+    SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64, LWA_COLORKEY);
   } break;
   case WM_DESTROY: {
     PostQuitMessage(0);
   } break;
   case WM_PAINT: {
-    PAINTSTRUCT tPaintStruct;
-    HDC hDC = BeginPaint(hWnd, &tPaintStruct);
-    Gdiplus::Graphics oGraphics(hDC);
-    Gdiplus::Pen oPen(Gdiplus::Color(255, 0, 0), 3);
-    Gdiplus::RectF oRectF(10, 10, 600, 420);
-    drawRoundRect(oGraphics, &oRectF, &oPen);
-    EndPaint(hWnd, &tPaintStruct);
+    PAINTSTRUCT paint;
+    HDC hDC = BeginPaint(hWnd, &paint);
+    HBRUSH hBrush = CreateSolidBrush(RGB(255, 0, 0));
+    SelectObject(hdc, hBrush);
+    ExtFloodFill(hdc, 0, 0, RGB(255, 255, 255), FLOODFILLSURFACE);
+    // SetBkMode(hdc, TRANSPARENT);
+    Gdiplus::Graphics graphics(hDC);
+    Gdiplus::Pen pen(Gdiplus::Color(0, 0, 255), 8);
+    Gdiplus::RectF rectF(10, 10, 600, 420);
+    drawRoundRect(graphics, &rectF, &pen);
+    EndPaint(hWnd, &paint);
   }
     return false;
   }
@@ -64,7 +68,6 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 }
 
 int main(Platform::Array<Platform::String ^> ^ args) {
-  // setlocale(LC_ALL, "Japanese");
   WNDCLASSEX wndClass;
   HINSTANCE hInstance;
   HWND hWnd;
@@ -98,7 +101,7 @@ int main(Platform::Array<Platform::String ^> ^ args) {
     return -1;
   }
 
-  hWnd = CreateWindowEx(0, wndClass.lpszClassName, windowName,
+  hWnd = CreateWindowEx(WS_EX_LAYERED, wndClass.lpszClassName, windowName,
                         WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 640,
                         480, nullptr, nullptr, hInstance, nullptr);
 
