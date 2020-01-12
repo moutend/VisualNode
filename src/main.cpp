@@ -38,6 +38,9 @@ void drawRoundRect(Gdiplus::Graphics &graphics, Gdiplus::RectF *pRectF,
 
 LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                 LPARAM lParam) {
+  static int x{};
+  static int y{};
+
   switch (uMsg) {
   case WM_CREATE: {
     SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64, LWA_COLORKEY);
@@ -52,12 +55,15 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     HBRUSH hBrush = CreateSolidBrush(RGB(255, 0, 0));
     SelectObject(hDC, hBrush);
     ExtFloodFill(hDC, 0, 0, RGB(255, 255, 255), FLOODFILLSURFACE);
-    // SetBkMode(hdc, TRANSPARENT);
     Gdiplus::Graphics graphics(hDC);
     Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255), 8);
-    Gdiplus::RectF rectF(10, 10, 600, 420);
+    Gdiplus::RectF rectF(x, y, 50, 50);
     drawRoundRect(graphics, &rectF, &pen);
     EndPaint(hWnd, &paint);
+
+    UpdateWindow(hWnd);
+    x = x > 500 ? 0 : x = +10;
+    y = y > 300 ? 0 : y + 10;
   }
     return false;
   }
@@ -80,23 +86,9 @@ DWORD WINAPI animationLoop(LPVOID context) {
   HWND hWnd = ctx->TargetWindow;
 
   while (true) {
-    PAINTSTRUCT paint;
-    HDC hDC = BeginPaint(hWnd, &paint);
-    HBRUSH hBrush = CreateSolidBrush(RGB(255, 0, 0));
-    SelectObject(hDC, hBrush);
-    ExtFloodFill(hDC, 0, 0, RGB(255, 255, 255), FLOODFILLSURFACE);
-    Gdiplus::Graphics graphics(hDC);
-    Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255), 8);
-    Gdiplus::RectF rectF(x, y, 100, 100);
-    drawRoundRect(graphics, &rectF, &pen);
-    EndPaint(hWnd, &paint);
-    UpdateWindow(hWnd);
-
-    Sleep(100);
-    x = x > 500 ? x + 10 : 0;
-    y = y > 300 ? y + 10 : 0;
+    SendMessage(hWnd, WM_PAINT, 0, 0);
+    Sleep(200);
   }
-
   return S_OK;
 }
 
