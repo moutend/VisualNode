@@ -53,7 +53,7 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     SelectObject(hDC, hBrush);
     ExtFloodFill(hDC, 0, 0, RGB(255, 255, 255), FLOODFILLSURFACE);
     Gdiplus::Graphics graphics(hDC);
-    Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255), 8);
+    Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255), 4);
     Gdiplus::RectF rectF(0, 0, 50, 50);
     drawRoundRect(graphics, &rectF, &pen);
     EndPaint(hWnd, &paint);
@@ -86,7 +86,7 @@ DWORD WINAPI animationLoop(LPVOID context) {
     SelectObject(hDC, hBrush);
     ExtFloodFill(hDC, 0, 0, RGB(255, 255, 255), FLOODFILLSURFACE);
     Gdiplus::Graphics graphics(hDC);
-    Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255), 8);
+    Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255), 4);
     Gdiplus::RectF rectF(x, y, 50, 50);
     drawRoundRect(graphics, &rectF, &pen);
     ReleaseDC(hWnd, hDC);
@@ -94,7 +94,7 @@ DWORD WINAPI animationLoop(LPVOID context) {
     x = x > 500 ? 0 : x + 10;
     y = y > 300 ? 0 : y + 10;
 
-    Sleep(200);
+    Sleep(2000);
   }
   return S_OK;
 }
