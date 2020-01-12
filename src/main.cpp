@@ -90,6 +90,7 @@ DWORD WINAPI animationLoop(LPVOID context) {
     Gdiplus::RectF rectF(x, y, 100, 100);
     drawRoundRect(graphics, &rectF, &pen);
     EndPaint(hWnd, &paint);
+    UpdateWindow(hWnd);
 
     Sleep(100);
     x = x > 500 ? x + 10 : 0;
