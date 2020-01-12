@@ -42,9 +42,8 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                 LPARAM lParam) {
   switch (uMsg) {
   case WM_CREATE: {
-    CREATESTRUCT *tpCreateSt = (CREATESTRUCT *)lParam;
-    ShowWindow(hWnd, SW_SHOW);
     SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64, LWA_COLORKEY);
+    ShowWindow(hWnd, SW_SHOW);
   } break;
   case WM_DESTROY: {
     PostQuitMessage(0);
