@@ -7,7 +7,7 @@ void drawRoundRect(Gdiplus::Graphics &graphics, Gdiplus::RectF *pRectF,
                    Gdiplus::Pen *pPen) {
   Gdiplus::REAL startAngle = 180;
   Gdiplus::REAL sweepAngle = 90;
-  Gdiplus::REAL radius = 48;
+  Gdiplus::REAL radius = 24;
   Gdiplus::REAL left = pRectF->X;
   Gdiplus::REAL top = pRectF->Y;
   Gdiplus::REAL right = pRectF->GetRight();
@@ -38,9 +38,6 @@ void drawRoundRect(Gdiplus::Graphics &graphics, Gdiplus::RectF *pRectF,
 
 LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                 LPARAM lParam) {
-  static int x{};
-  static int y{};
-
   switch (uMsg) {
   case WM_CREATE: {
     SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64, LWA_COLORKEY);
@@ -57,7 +54,7 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     ExtFloodFill(hDC, 0, 0, RGB(255, 255, 255), FLOODFILLSURFACE);
     Gdiplus::Graphics graphics(hDC);
     Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255), 8);
-    Gdiplus::RectF rectF(x, y, 50, 50);
+    Gdiplus::RectF rectF(0, 0, 50, 50);
     drawRoundRect(graphics, &rectF, &pen);
     EndPaint(hWnd, &paint);
 
@@ -84,9 +81,23 @@ DWORD WINAPI animationLoop(LPVOID context) {
   int x{};
   int y{};
   HWND hWnd = ctx->TargetWindow;
+  int x{};
+  int y{};
 
   while (true) {
-    UpdateWindow(hWnd);
+    HDC hDC = GetDC(hWnd);
+    HBRUSH hBrush = CreateSolidBrush(RGB(255, 0, 0));
+    SelectObject(hDC, hBrush);
+    ExtFloodFill(hDC, 0, 0, RGB(255, 255, 255), FLOODFILLSURFACE);
+    Gdiplus::Graphics graphics(hDC);
+    Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255), 8);
+    Gdiplus::RectF rectF(x, y, 50, 50);
+    drawRoundRect(graphics, &rectF, &pen);
+    ReleaseDC(hWnd, hDC);
+
+    x = x > 500 ? 0 : x = +10;
+    y = y > 300 ? 0 : y + 10;
+
     Sleep(200);
   }
   return S_OK;
