@@ -140,7 +140,7 @@ int main(Platform::Array<Platform::String ^> ^ args) {
 
   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-  AnimationLoopContext animationLoopContext = new AnimationLoopContext;
+  AnimationLoopContext *animationLoopContext = new AnimationLoopContext;
   animationLoopContext->TargetWindow = hWnd;
 
   HANDLE animationThread =
