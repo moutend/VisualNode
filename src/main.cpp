@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <tchar.h>
 #include <windows.h>
 
 #include <gdiplus.h>
@@ -49,6 +47,11 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     PostQuitMessage(0);
   } break;
   case WM_PAINT: {
+    HRGN hRgn = CreateRectRgn(0, 0, 1, 1);
+    HRGN hRgn1 = CreateRectRgn(0, 0, 200, 200);
+    HRGN hRgn2 = CreateRectRgn(8, 8, 192, 192);
+    CombineRgn(hRgn, hRgn1, hRgn2, RGN_DIFF);
+    SetWindowRgn(hWnd, hRgn, TRUE);
     PAINTSTRUCT paint;
     HDC hDC = BeginPaint(hWnd, &paint);
     HBRUSH hBrush = CreateSolidBrush(RGB(255, 0, 0));
