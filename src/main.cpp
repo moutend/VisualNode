@@ -86,7 +86,7 @@ DWORD WINAPI animationLoop(LPVOID context) {
   HWND hWnd = ctx->TargetWindow;
 
   while (true) {
-    SendMessage(hWnd, WM_PAINT, 0, 0);
+    UpdateWindow(hWnd);
     Sleep(200);
   }
   return S_OK;
