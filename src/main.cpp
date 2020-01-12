@@ -57,10 +57,6 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     Gdiplus::RectF rectF(0, 0, 50, 50);
     drawRoundRect(graphics, &rectF, &pen);
     EndPaint(hWnd, &paint);
-
-    UpdateWindow(hWnd);
-    x = x > 500 ? 0 : x = +10;
-    y = y > 300 ? 0 : y + 10;
   }
     return false;
   }
