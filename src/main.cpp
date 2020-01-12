@@ -79,6 +79,7 @@ DWORD WINAPI animationLoop(LPVOID context) {
   HWND hWnd = ctx->TargetWindow;
 
   while (true) {
+    InvalidateRect(hWnd, nullptr, true);
     SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64, LWA_COLORKEY);
     HDC hDC = GetDC(hWnd);
     HBRUSH hBrush = CreateSolidBrush(RGB(255, 0, 0));
