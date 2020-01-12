@@ -98,9 +98,10 @@ int main(Platform::Array<Platform::String ^> ^ args) {
     return -1;
   }
 
-  hWnd = CreateWindowEx(WS_EX_LAYERED, wndClass.lpszClassName, windowName,
-                        WS_POPUP, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480,
-                        nullptr, nullptr, hInstance, nullptr);
+  hWnd = CreateWindowEx(
+      WS_EX_COMPOSITED | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST,
+      wndClass.lpszClassName, windowName, WS_POPUP, CW_USEDEFAULT,
+      CW_USEDEFAULT, 640, 480, nullptr, nullptr, hInstance, nullptr);
 
   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
