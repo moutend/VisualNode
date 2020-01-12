@@ -79,6 +79,7 @@ DWORD WINAPI animationLoop(LPVOID context) {
   HWND hWnd = ctx->TargetWindow;
 
   while (true) {
+    SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64, LWA_COLORKEY);
     HDC hDC = GetDC(hWnd);
     HBRUSH hBrush = CreateSolidBrush(RGB(255, 0, 0));
     SelectObject(hDC, hBrush);
@@ -89,7 +90,7 @@ DWORD WINAPI animationLoop(LPVOID context) {
     drawRoundRect(graphics, &rectF, &pen);
     ReleaseDC(hWnd, hDC);
 
-    x = x > 500 ? 0 : x = +10;
+    x = x > 500 ? 0 : x + 10;
     y = y > 300 ? 0 : y + 10;
 
     Sleep(200);
