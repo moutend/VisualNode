@@ -64,6 +64,41 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
+struct AnimationLoopContext {
+  HWND TargetWindow = nullptr;
+};
+
+DWORD WINAPI animationLoop(LPVOID context) {
+  AnimationLoopContext *ctx = static_cast<AnimationLoopContext *>(context);
+
+  if (ctx == nullptr) {
+    return E_FAIL;
+  }
+
+  int x{};
+  int y{};
+  HWND hWnd = ctx->TargetWindow;
+
+  while (true) {
+    PAINTSTRUCT paint;
+    HDC hDC = BeginPaint(hWnd, &paint);
+    HBRUSH hBrush = CreateSolidBrush(RGB(255, 0, 0));
+    SelectObject(hDC, hBrush);
+    ExtFloodFill(hDC, 0, 0, RGB(255, 255, 255), FLOODFILLSURFACE);
+    Gdiplus::Graphics graphics(hDC);
+    Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255), 8);
+    Gdiplus::RectF rectF(x, y, 100, 100);
+    drawRoundRect(graphics, &rectF, &pen);
+    EndPaint(hWnd, &paint);
+
+    Sleep(100);
+    x = x > 500 ? x + 10 : 0;
+    y = y > 300 ? y + 10 : 0;
+  }
+
+  return S_OK;
+}
+
 int main(Platform::Array<Platform::String ^> ^ args) {
   WNDCLASSEX wndClass;
   HINSTANCE hInstance;
@@ -105,6 +140,16 @@ int main(Platform::Array<Platform::String ^> ^ args) {
 
   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
+  AnimationLoopContext animationLoopContext = new AnimationLoopContext;
+  animationLoopContext->TargetWindow = hWnd;
+
+  HANDLE animationThread =
+      CreateThread(nullptr, 0, animationLoop,
+                   static_cast<void *>(animationLoopContext), 0, nullptr);
+
+  if (animationThread == nullptr) {
+    return -1;
+  }
   while (GetMessage(&msg, nullptr, 0, 0) != 0) {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
