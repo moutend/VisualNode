@@ -77,8 +77,6 @@ DWORD WINAPI animationLoop(LPVOID context) {
   int x{};
   int y{};
   HWND hWnd = ctx->TargetWindow;
-  int x{};
-  int y{};
 
   while (true) {
     HDC hDC = GetDC(hWnd);
