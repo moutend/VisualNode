@@ -109,7 +109,7 @@ DWORD WINAPI paintLoop(LPVOID context) {
   float y{};
 
   while (true) {
-    Sleep(1000);
+    Sleep(100);
 
     if (pRenderTarget == nullptr) {
       continue;
@@ -125,7 +125,7 @@ DWORD WINAPI paintLoop(LPVOID context) {
     pRenderTarget->Clear(blackColor);
 
     ID2D1SolidColorBrush *pBrush{};
-    pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.5f, 0.5f, 0.5f, 1.0f),
+    pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.75f, 0.75f, 0.75f, 1.0f),
                                          &pBrush);
 
     if (pBrush != nullptr) {
