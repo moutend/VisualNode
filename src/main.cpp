@@ -13,7 +13,7 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                 LPARAM lParam) {
   switch (uMsg) {
   case WM_CREATE: {
-    SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64,
+    SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 128,
                                LWA_COLORKEY | LWA_ALPHA);
     CREATESTRUCT *createStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
     HRESULT hr =
