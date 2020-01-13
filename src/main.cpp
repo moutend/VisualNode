@@ -13,6 +13,8 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                 LPARAM lParam) {
   switch (uMsg) {
   case WM_CREATE: {
+    SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64,
+                               LWA_COLORKEY | LWA_ALPHA);
     CREATESTRUCT *createStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
     HRESULT hr =
         D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2d1Factory);
@@ -46,7 +48,7 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     PAINTSTRUCT paint;
     BeginPaint(hWnd, &paint);
     pRenderTarget->BeginDraw();
-    D2D1_COLOR_F blackColor = {1.0f, 1.0f, 1.0f, 1.0f};
+    D2D1_COLOR_F blackColor = {1.0f, 0.0f, 0.0f, 1.0f};
     pRenderTarget->Clear(blackColor);
 
     ID2D1SolidColorBrush *pBrush{};
