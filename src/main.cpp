@@ -1,62 +1,77 @@
 #include <windows.h>
 
-#include <gdiplus.h>
-#include <wingdi.h>
+#include <d2d1.h>
+#include <wincodec.h>
+#include <wincodecsdk.h>
 
-void drawRoundRect(Gdiplus::Graphics &graphics, Gdiplus::RectF *pRectF,
-                   Gdiplus::Pen *pPen) {
-  Gdiplus::REAL startAngle = 180;
-  Gdiplus::REAL sweepAngle = 90;
-  Gdiplus::REAL radius = 48;
-  Gdiplus::REAL left = pRectF->X;
-  Gdiplus::REAL top = pRectF->Y;
-  Gdiplus::REAL right = pRectF->GetRight();
-  Gdiplus::REAL bottom = pRectF->GetBottom();
-  Gdiplus::GraphicsPath graphicsPath;
+#include "util.h"
 
-  graphicsPath.AddArc(left, top, radius, radius, startAngle, sweepAngle);
-
-  startAngle += 90;
-
-  graphicsPath.AddArc(right - radius, top, radius, radius, startAngle,
-                      sweepAngle);
-
-  startAngle += 90;
-
-  graphicsPath.AddArc(right - radius, bottom - radius, radius, radius,
-                      startAngle, sweepAngle);
-
-  startAngle += 90;
-
-  graphicsPath.AddArc(left, bottom - radius, radius, radius, startAngle,
-                      sweepAngle);
-
-  graphicsPath.CloseAllFigures();
-
-  graphics.DrawPath(pPen, &graphicsPath);
-}
+ID2D1Factory *pD2d1Factory{};
+ID2D1HwndRenderTarget *pRenderTarget{};
 
 LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                 LPARAM lParam) {
   switch (uMsg) {
   case WM_CREATE: {
+    CREATESTRUCT *createStruct = static_cast<CREATESTRUCT *>(lParam);
+    HRESULT hr =
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2d1Factory);
+
+    if (FAILED(hr)) {
+      break;
+    }
+
+    D2D1_SIZE_U pixelSize = {createStruct->cx, createStruct->cy};
+    D2D1_RENDER_TARGET_PROPERTIES renderTargetProperties =
+        D2D1::RenderTargetProperties();
+    D2D1_HWND_RENDER_TARGET_PROPERTIES hwndRenderTargetProperties =
+        D2D1::HwndRenderTargetProperties(hWnd, pixelSize);
     SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64, LWA_COLORKEY);
+    hr = pD2d1Factory->CreateHwndRenderTarget(
+        renderTargetProperties, hwndRenderTargetProperties, &pRenderTarget);
+
+    if (FAILED(hr)) {
+      break;
+    }
+
     ShowWindow(hWnd, SW_SHOW);
   } break;
   case WM_DESTROY: {
+    SafeRelease(&pRenderTarget);
+    SafeRelease(&pD2d1Factory);
     PostQuitMessage(0);
   } break;
   case WM_PAINT: {
+    D2D1_SIZE_F targetSize = pRenderTarget->GetSize();
     PAINTSTRUCT paint;
-    HDC hDC = BeginPaint(hWnd, &paint);
-    HBRUSH hBrush = CreateSolidBrush(RGB(255, 0, 0));
-    SelectObject(hDC, hBrush);
-    ExtFloodFill(hDC, 0, 0, RGB(255, 255, 255), FLOODFILLSURFACE);
-    // SetBkMode(hdc, TRANSPARENT);
-    Gdiplus::Graphics graphics(hDC);
-    Gdiplus::Pen pen(Gdiplus::Color(255, 255, 255), 8);
-    Gdiplus::RectF rectF(10, 10, 600, 420);
-    drawRoundRect(graphics, &rectF, &pen);
+    BeginPaint(hWnd, &paint);
+    pRenderTarget->BeginDraw();
+    D2D1_COLOR_F blackColor = {1.0f, 1.0f, 1.0f, 1.0f};
+    pRenderTarget->Clear(blackColor);
+
+    for (int i = 0; i < targetSize.height; i += 10) {
+      ID2D1SolidColorBrush *pBrush{};
+      pRenderTarget->CreateSolidColorBrush(
+          D2D1::ColorF(static_cast<float>(i / targetSize.height), 0.0f, 0.0f,
+                       1.0f),
+          &pBrush);
+
+      if (pBrush != nullptr) {
+        D2D1_POINT_2F center =
+            D2D1::Point2F(targetSize.width / 2, targetSize.height / 2);
+        D2D1_ROUNDED_RECT roundRect =
+            D2D1::RoundedRect(D2D1::RectF(static_cast<float>(center.x - i),
+                                          static_cast<float>(center.y - i),
+                                          static_cast<float>(center.x + i),
+                                          static_cast<float>(center.y + i)),
+                              10.0f, 10.0f);
+        float strokeWidth = static_cast<float>((i / 10) % 3 + 1);
+        pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush, strokeWidth);
+        pBrush->Release();
+      }
+    }
+
+    pRenderTarget->EndDraw();
     EndPaint(hWnd, &paint);
   }
     return false;
@@ -65,6 +80,12 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 }
 
 int main(Platform::Array<Platform::String ^> ^ args) {
+  HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
+  if (FAILED(hr)) {
+    return hr;
+  }
+
   WNDCLASSEX wndClass;
   HINSTANCE hInstance;
   HWND hWnd;
@@ -73,10 +94,6 @@ int main(Platform::Array<Platform::String ^> ^ args) {
   char windowName[] = "Rendering Rounded Rectangle";
   char className[] = "MainWindowClass";
   char *menuName{};
-
-  ULONG_PTR gdiplusToken{};
-  Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-  Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, 0);
 
   hInstance = GetModuleHandle(nullptr);
   menuName = MAKEINTRESOURCE(nullptr);
@@ -110,7 +127,7 @@ int main(Platform::Array<Platform::String ^> ^ args) {
     DispatchMessage(&msg);
   }
 
-  Gdiplus::GdiplusShutdown(gdiplusToken);
+  CoUninitialize();
 
   return msg.wParam;
 }
