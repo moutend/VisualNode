@@ -93,6 +93,59 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
+struct PaintLoopContext {
+  HWND TargetWindow = nullptr;
+};
+
+DWORD WINAPI paintLoop(LPVOID context) {
+  PaintLoopContext *ctx = static_cast<PaintLoopContext *>(context);
+
+  if (ctx == nullptr) {
+    return E_FAIL;
+  }
+
+  HWND = ctx->TargetWindow;
+  float x{};
+  float y{};
+
+  while (true) {
+    Sleep(1000);
+
+    if (PRenderTarget == nullptr) {
+      continue;
+    }
+
+    D2D1_SIZE_F targetSize = pRenderTarget->GetSize();
+    PAINTSTRUCT paint;
+
+    InvalidateRect(hWnd, nullptr, true);
+    HDC hDC = GetDC(hWnd, &paint);
+    pRenderTarget->BeginDraw();
+    D2D1_COLOR_F blackColor = {1.0f, 0.0f, 0.0f, 1.0f};
+    pRenderTarget->Clear(blackColor);
+
+    ID2D1SolidColorBrush *pBrush{};
+    pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.5f, 0.5f, 0.5f, 1.0f),
+                                         &pBrush);
+
+    if (pBrush != nullptr) {
+      D2D1_POINT_2F center =
+          D2D1::Point2F(targetSize.width / 2, targetSize.height / 2);
+      D2D1_ROUNDED_RECT roundRect =
+          D2D1::RoundedRect(D2D1::RectF(x, y, x + 80.0f, y + 80.0f,
+                            16.0f, 16.0f);
+      pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush, 8.0f);
+      pBrush->Release();
+    }
+
+    pRenderTarget->EndDraw();
+    ReleaseDc(hWnd, hDC);
+
+    x = x > 400.0f ? 0.0f : x + 5.0f;
+    y = y > 300.0f ? 0.0f : y + 5.0f;
+  }
+}
+
 int main(Platform::Array<Platform::String ^> ^ args) {
   HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
@@ -135,7 +188,16 @@ int main(Platform::Array<Platform::String ^> ^ args) {
       CW_USEDEFAULT, 640, 480, nullptr, nullptr, hInstance, nullptr);
 
   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+  PaintLoopContext *paintLoopCtx = new PaintLoopContext;
 
+  paintLoopCtx->TargetWindow = hWnd;
+
+  HANDLE paintLoopThread = CreateThread(
+      nullptr, 0, paintLoop, static_cast<void *>(paintLoopCtx), 0, nullptr);
+
+  if (paintLoopThread == nullptr) {
+    return -1;
+  }
   while (GetMessage(&msg, nullptr, 0, 0) != 0) {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
