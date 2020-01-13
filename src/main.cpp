@@ -49,26 +49,21 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     D2D1_COLOR_F blackColor = {1.0f, 1.0f, 1.0f, 1.0f};
     pRenderTarget->Clear(blackColor);
 
-    for (int i = 0; i < targetSize.height; i += 10) {
-      ID2D1SolidColorBrush *pBrush{};
-      pRenderTarget->CreateSolidColorBrush(
-          D2D1::ColorF(static_cast<float>(i / targetSize.height), 0.0f, 0.0f,
-                       1.0f),
-          &pBrush);
+    ID2D1SolidColorBrush *pBrush{};
+    pRenderTarget->CreateSolidColorBrush(0.0f, 0.0f, 0.0f,1.0f),
+        &pBrush);
 
-      if (pBrush != nullptr) {
-        D2D1_POINT_2F center =
-            D2D1::Point2F(targetSize.width / 2, targetSize.height / 2);
-        D2D1_ROUNDED_RECT roundRect =
-            D2D1::RoundedRect(D2D1::RectF(static_cast<float>(center.x - i),
-                                          static_cast<float>(center.y - i),
-                                          static_cast<float>(center.x + i),
-                                          static_cast<float>(center.y + i)),
-                              10.0f, 10.0f);
-        float strokeWidth = static_cast<float>((i / 10) % 3 + 1);
-        pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush, strokeWidth);
-        pBrush->Release();
-      }
+    if (pBrush != nullptr) {
+      D2D1_POINT_2F center =
+          D2D1::Point2F(targetSize.width / 2, targetSize.height / 2);
+      D2D1_ROUNDED_RECT roundRect =
+          D2D1::RoundedRect(D2D1::RectF(static_cast<float>(center.x),
+                                        static_cast<float>(center.y),
+                                        static_cast<float>(center.x),
+                                        static_cast<float>(center.y)),
+                            10.0f, 10.0f);
+      pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush, 8.0f);
+      pBrush->Release();
     }
 
     pRenderTarget->EndDraw();
