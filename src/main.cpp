@@ -111,7 +111,7 @@ DWORD WINAPI paintLoop(LPVOID context) {
   while (true) {
     Sleep(1000);
 
-    if (PRenderTarget == nullptr) {
+    if (pRenderTarget == nullptr) {
       continue;
     }
 
@@ -119,7 +119,7 @@ DWORD WINAPI paintLoop(LPVOID context) {
     PAINTSTRUCT paint;
 
     InvalidateRect(hWnd, nullptr, true);
-    HDC hDC = GetDC(hWnd, &paint);
+    HDC hDC = GetDC(hWnd);
     pRenderTarget->BeginDraw();
     D2D1_COLOR_F blackColor = {1.0f, 0.0f, 0.0f, 1.0f};
     pRenderTarget->Clear(blackColor);
@@ -131,9 +131,8 @@ DWORD WINAPI paintLoop(LPVOID context) {
     if (pBrush != nullptr) {
       D2D1_POINT_2F center =
           D2D1::Point2F(targetSize.width / 2, targetSize.height / 2);
-      D2D1_ROUNDED_RECT roundRect =
-          D2D1::RoundedRect(D2D1::RectF(x, y, x + 80.0f, y + 80.0f,
-                            16.0f, 16.0f);
+      D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
+          D2D1::RectF(x, y, x + 80.0f, y + 80.0f), 16.0f, 16.0f);
       pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush, 8.0f);
       pBrush->Release();
     }
