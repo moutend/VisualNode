@@ -104,7 +104,7 @@ DWORD WINAPI paintLoop(LPVOID context) {
     return E_FAIL;
   }
 
-  HWND = ctx->TargetWindow;
+  HWND hWnd = ctx->TargetWindow;
   float x{};
   float y{};
 
@@ -139,7 +139,7 @@ DWORD WINAPI paintLoop(LPVOID context) {
     }
 
     pRenderTarget->EndDraw();
-    ReleaseDc(hWnd, hDC);
+    ReleaseDC(hWnd, hDC);
 
     x = x > 400.0f ? 0.0f : x + 5.0f;
     y = y > 300.0f ? 0.0f : y + 5.0f;
