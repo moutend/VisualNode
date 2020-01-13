@@ -13,7 +13,7 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                 LPARAM lParam) {
   switch (uMsg) {
   case WM_CREATE: {
-    CREATESTRUCT *createStruct = static_cast<CREATESTRUCT *>(lParam);
+    CREATESTRUCT *createStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
     HRESULT hr =
         D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2d1Factory);
 
