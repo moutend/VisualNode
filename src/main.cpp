@@ -68,6 +68,23 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
       pBrush->Release();
     }
 
+    ID2D1SolidColorBrush *pBrush2{};
+    pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f),
+                                         &pBrush2);
+
+    if (pBrush2 != nullptr) {
+      D2D1_POINT_2F center2 =
+          D2D1::Point2F(targetSize.width / 2, targetSize.height / 2);
+      D2D1_ROUNDED_RECT roundRect2 =
+          D2D1::RoundedRect(D2D1::RectF(static_cast<float>(center2.x - 150),
+                                        static_cast<float>(center2.y - 150),
+                                        static_cast<float>(center2.x + 100),
+                                        static_cast<float>(center2.y + 100)),
+                            16.0f, 16.0f);
+      pRenderTarget->DrawRoundedRectangle(&roundRect2, pBrush2, 8.0f);
+      pBrush2->Release();
+    }
+
     pRenderTarget->EndDraw();
     EndPaint(hWnd, &paint);
   }
