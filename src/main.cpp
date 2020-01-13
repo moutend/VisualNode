@@ -59,9 +59,9 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
       D2D1_ROUNDED_RECT roundRect =
           D2D1::RoundedRect(D2D1::RectF(static_cast<float>(center.x),
                                         static_cast<float>(center.y),
-                                        static_cast<float>(center.x),
-                                        static_cast<float>(center.y)),
-                            10.0f, 10.0f);
+                                        static_cast<float>(center.x + 100),
+                                        static_cast<float>(center.y + 100)),
+                            16.0f, 16.0f);
       pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush, 8.0f);
       pBrush->Release();
     }
