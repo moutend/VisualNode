@@ -107,7 +107,8 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
   Log->Info(L"Start highlight paint loop thread", GetCurrentThreadId(),
             __LONGFILE__);
 
-  PaintLoopContext *ctx = static_cast<PaintLoopContext *>(context);
+  HighlightPaintLoopContext *ctx =
+      static_cast<HighlightPaintLoopContext *>(context);
 
   if (ctx == nullptr) {
     return E_FAIL;
@@ -221,10 +222,10 @@ DWORD WINAPI highlightLoop(LPVOID context) {
 
   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-  PaintLoopContext *paintLoopCtx = new PaintLoopContext;
+  HighlightPaintLoopContext *paintLoopCtx = new HighlightPaintLoopContext;
 
-  paintLoopCtx->TargetWindow = hWnd;
-  paintLoopCtx->QuitEvent = ctx->QuitEvent;
+  highlightPaintLoopCtx->TargetWindow = hWnd;
+  highlightPaintLoopCtx->QuitEvent = ctx->QuitEvent;
 
   HANDLE highlightPaintLoopThread =
       CreateThread(nullptr, 0, highlightPaintLoop,
