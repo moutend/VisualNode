@@ -5,6 +5,8 @@
 #include <wincodec.h>
 #include <wincodecsdk.h>
 
+#include <strsafe.h>
+
 #include "context.h"
 #include "highlightloop.h"
 #include "util.h"
@@ -17,7 +19,11 @@ ID2D1HwndRenderTarget *pRenderTarget{};
 LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                      LPARAM lParam) {
   switch (uMsg) {
+  case WM_DISPLAYCHANGE: {
+    Log->Info(L"Modify highlight window", GetCurrentThreadId(), __LONGFILE__);
+  } break;
   case WM_CREATE: {
+    Log->Info(L"Create highlight window", GetCurrentThreadId(), __LONGFILE__);
     SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 128,
                                LWA_COLORKEY | LWA_ALPHA);
     CREATESTRUCT *createStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
@@ -49,6 +55,7 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     ShowWindow(hWnd, SW_SHOW);
   } break;
   case WM_DESTROY: {
+    Log->Info(L"Destroy highlight window", GetCurrentThreadId(), __LONGFILE__);
     SafeRelease(&pRenderTarget);
     SafeRelease(&pD2d1Factory);
     PostQuitMessage(0);
@@ -194,6 +201,20 @@ DWORD WINAPI highlightLoop(LPVOID context) {
     Log->Fail(L"Failed to initialize COM", GetCurrentThreadId(), __LONGFILE__);
     return hr;
   }
+
+  wchar_t *str = new wchar_t[256]{};
+
+  hr = StringCbPrintfW(str, 255, L"Screen=(%d,%d)\n",
+                       GetSystemMetrics(SM_CXSCREEN),
+                       GetSystemMetrics(SM_CYSCREEN));
+
+  if (FAILED(hr)) {
+    Log->Fail(L"Failed to get system metrics", GetCurrentThreadId(),
+              __LONGFILE__);
+    return hr;
+  }
+
+  Log->Info(str, GetCurrentThreadId(), __LONGFILE__);
 
   WNDCLASSEX wndClass;
   HINSTANCE hInstance;
