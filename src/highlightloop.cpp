@@ -222,7 +222,8 @@ DWORD WINAPI highlightLoop(LPVOID context) {
 
   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-  HighlightPaintLoopContext *paintLoopCtx = new HighlightPaintLoopContext;
+  HighlightPaintLoopContext *highlightPaintLoopCtx =
+      new HighlightPaintLoopContext;
 
   highlightPaintLoopCtx->TargetWindow = hWnd;
   highlightPaintLoopCtx->QuitEvent = ctx->QuitEvent;
