@@ -149,8 +149,8 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
     pRenderTarget->Clear(blackColor);
 
     ID2D1SolidColorBrush *pBrush{};
-    pRenderTarget->CreateSolidColorBrush(
-        D2D1::ColorF(0.75f, 0.75f, 0.75f, 1.0f), &pBrush);
+    pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f),
+                                         &pBrush);
 
     if (pBrush != nullptr) {
       D2D1_POINT_2F center =
