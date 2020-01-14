@@ -167,10 +167,10 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
     x = x > 400.0f ? 0.0f : x + 5.0f;
     y = y > 300.0f ? 0.0f : y + 5.0f;
   }
-if (FAILED(SendMessage(hWnd, WM_DESTROY, 0, 0)) {
+  if (FAILED(SendMessage(hWnd, WM_DESTROY, 0, 0))) {
     Log->Fail(L"Failed to send message", GetCurrentThreadId(), __LONGFILE__);
     return E_FAIL;
-}
+  }
 
   Log->Info(L"End highlight paint loop thread", GetCurrentThreadId(),
             __LONGFILE__);
