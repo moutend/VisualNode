@@ -25,5 +25,5 @@ set(CMAKE_CXX_STANDARD 17)
 add_compile_options("/ZW")
 
 file(GLOB SOURCES "./src/*")
-add_executable(VisualNode ${SOURCES})
+add_library(VisualNode SHARED ${SOURCES})
 target_link_libraries(VisualNode cpplogger cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_boost_internal cpprestsdk::cpprestsdk_brotli_internal d2d1.lib WindowsCodecs.lib)

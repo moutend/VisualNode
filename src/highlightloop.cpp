@@ -1,16 +1,21 @@
+#include <cpplogger/cpplogger.h>
 #include <windows.h>
 
 #include <d2d1.h>
 #include <wincodec.h>
 #include <wincodecsdk.h>
 
+#include "context.h"
+#include "highlightloop.h"
 #include "util.h"
+
+extern Logger::Logger *Log;
 
 ID2D1Factory *pD2d1Factory{};
 ID2D1HwndRenderTarget *pRenderTarget{};
 
-LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
-                                LPARAM lParam) {
+LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
+                                     LPARAM lParam) {
   switch (uMsg) {
   case WM_CREATE: {
     SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 128,
@@ -93,11 +98,15 @@ LRESULT CALLBACK mainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-struct PaintLoopContext {
+struct HighlightPaintLoopContext {
+  HANDLE QuitEvent = nullptr;
   HWND TargetWindow = nullptr;
 };
 
-DWORD WINAPI paintLoop(LPVOID context) {
+DWORD WINAPI highlightPaintLoop(LPVOID context) {
+  Log->Info(L"Start highlight paint loop thread", GetCurrentThreadId(),
+            __LONGFILE__);
+
   PaintLoopContext *ctx = static_cast<PaintLoopContext *>(context);
 
   if (ctx == nullptr) {
@@ -107,8 +116,17 @@ DWORD WINAPI paintLoop(LPVOID context) {
   HWND hWnd = ctx->TargetWindow;
   float x{};
   float y{};
+  bool isActive{true};
 
-  while (true) {
+  while (isActive) {
+    HANDLE waitArray[1] = {ctx->QuitEvent};
+    DWORD waitResult = WaitForMultipleObjects(1, waitArray, FALSE, 0);
+
+    if (waitResult == WAIT_OBJECT_0 + 0) {
+      isActive = false;
+      continue;
+    }
+
     Sleep(100);
 
     if (pRenderTarget == nullptr) {
@@ -143,12 +161,27 @@ DWORD WINAPI paintLoop(LPVOID context) {
     x = x > 400.0f ? 0.0f : x + 5.0f;
     y = y > 300.0f ? 0.0f : y + 5.0f;
   }
+
+  Log->Info(L"End highlight paint loop thread", GetCurrentThreadId(),
+            __LONGFILE__);
+
+  return S_OK;
 }
 
-int main(Platform::Array<Platform::String ^> ^ args) {
+DWORD WINAPI highlightLoop(LPVOID context) {
+  Log->Info(L"Start highlight loop thread", GetCurrentThreadId(), __LONGFILE__);
+
+  HighlightLoopContext *ctx = static_cast<HighlightLoopContext *>(context);
+
+  if (ctx == nullptr) {
+    Log->Fail(L"Failed to obtain ctx", GetCurrentThreadId(), __LONGFILE__);
+    return E_FAIL;
+  }
+
   HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
   if (FAILED(hr)) {
+    Log->Fail(L"Failed to initialize COM", GetCurrentThreadId(), __LONGFILE__);
     return hr;
   }
 
@@ -157,7 +190,7 @@ int main(Platform::Array<Platform::String ^> ^ args) {
   HWND hWnd;
   MSG msg;
 
-  char windowName[] = "Rendering Rounded Rectangle";
+  char windowName[] = "ScreenReaderX Highlight Rectangle";
   char className[] = "MainWindowClass";
   char *menuName{};
 
@@ -166,7 +199,7 @@ int main(Platform::Array<Platform::String ^> ^ args) {
 
   wndClass.cbSize = sizeof(WNDCLASSEX);
   wndClass.style = CS_HREDRAW | CS_VREDRAW;
-  wndClass.lpfnWndProc = mainWindowProc;
+  wndClass.lpfnWndProc = highlightWindowProc;
   wndClass.cbClsExtra = 0;
   wndClass.cbWndExtra = 0;
   wndClass.hInstance = hInstance;
@@ -178,7 +211,7 @@ int main(Platform::Array<Platform::String ^> ^ args) {
   wndClass.hIconSm = nullptr;
 
   if (!RegisterClassEx(&wndClass)) {
-    return -1;
+    return E_FAIL;
   }
 
   hWnd = CreateWindowEx(
@@ -187,15 +220,18 @@ int main(Platform::Array<Platform::String ^> ^ args) {
       CW_USEDEFAULT, 640, 480, nullptr, nullptr, hInstance, nullptr);
 
   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
   PaintLoopContext *paintLoopCtx = new PaintLoopContext;
 
   paintLoopCtx->TargetWindow = hWnd;
+  paintLoopCtx->QuitEvent = ctx->QuitEvent;
 
-  HANDLE paintLoopThread = CreateThread(
-      nullptr, 0, paintLoop, static_cast<void *>(paintLoopCtx), 0, nullptr);
+  HANDLE highlightPaintLoopThread =
+      CreateThread(nullptr, 0, highlightPaintLoop,
+                   static_cast<void *>(highlightPaintLoopCtx), 0, nullptr);
 
-  if (paintLoopThread == nullptr) {
-    return -1;
+  if (highlightPaintLoopThread == nullptr) {
+    return E_FAIL;
   }
   while (GetMessage(&msg, nullptr, 0, 0) != 0) {
     TranslateMessage(&msg);
@@ -203,6 +239,8 @@ int main(Platform::Array<Platform::String ^> ^ args) {
   }
 
   CoUninitialize();
+
+  Log->Info(L"End highlight loop thread", GetCurrentThreadId(), __LONGFILE__);
 
   return msg.wParam;
 }
