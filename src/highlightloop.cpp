@@ -25,6 +25,8 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
         D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2d1Factory);
 
     if (FAILED(hr)) {
+      Log->Fail(L"Failed to call D2D1CreateFactory", GetCurrentThreadId(),
+                __LONGFILE__);
       break;
     }
 
@@ -39,6 +41,8 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
         renderTargetProperties, hwndRenderTargetProperties, &pRenderTarget);
 
     if (FAILED(hr)) {
+      Log->Fail(L"Failed to call ID2D1Factory::CreateHwndRenderTarget",
+                GetCurrentThreadId(), __LONGFILE__);
       break;
     }
 
@@ -56,41 +60,41 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     pRenderTarget->BeginDraw();
     D2D1_COLOR_F blackColor = {1.0f, 0.0f, 0.0f, 1.0f};
     pRenderTarget->Clear(blackColor);
+    { // @@@begin
+      ID2D1SolidColorBrush *pBrush{};
+      pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f, 1.0f),
+                                           &pBrush);
 
-    ID2D1SolidColorBrush *pBrush{};
-    pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f, 1.0f),
-                                         &pBrush);
+      if (pBrush != nullptr) {
+        D2D1_POINT_2F center =
+            D2D1::Point2F(targetSize.width / 2, targetSize.height / 2);
+        D2D1_ROUNDED_RECT roundRect =
+            D2D1::RoundedRect(D2D1::RectF(static_cast<float>(center.x),
+                                          static_cast<float>(center.y),
+                                          static_cast<float>(center.x + 100),
+                                          static_cast<float>(center.y + 100)),
+                              16.0f, 16.0f);
+        pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush, 8.0f);
+        pBrush->Release();
+      }
 
-    if (pBrush != nullptr) {
-      D2D1_POINT_2F center =
-          D2D1::Point2F(targetSize.width / 2, targetSize.height / 2);
-      D2D1_ROUNDED_RECT roundRect =
-          D2D1::RoundedRect(D2D1::RectF(static_cast<float>(center.x),
-                                        static_cast<float>(center.y),
-                                        static_cast<float>(center.x + 100),
-                                        static_cast<float>(center.y + 100)),
-                            16.0f, 16.0f);
-      pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush, 8.0f);
-      pBrush->Release();
-    }
+      ID2D1SolidColorBrush *pBrush2{};
+      pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f),
+                                           &pBrush2);
 
-    ID2D1SolidColorBrush *pBrush2{};
-    pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f),
-                                         &pBrush2);
-
-    if (pBrush2 != nullptr) {
-      D2D1_POINT_2F center2 =
-          D2D1::Point2F(targetSize.width / 2, targetSize.height / 2);
-      D2D1_ROUNDED_RECT roundRect2 =
-          D2D1::RoundedRect(D2D1::RectF(static_cast<float>(center2.x - 150),
-                                        static_cast<float>(center2.y - 150),
-                                        static_cast<float>(center2.x + 100),
-                                        static_cast<float>(center2.y + 100)),
-                            16.0f, 16.0f);
-      pRenderTarget->DrawRoundedRectangle(&roundRect2, pBrush2, 8.0f);
-      pBrush2->Release();
-    }
-
+      if (pBrush2 != nullptr) {
+        D2D1_POINT_2F center2 =
+            D2D1::Point2F(targetSize.width / 2, targetSize.height / 2);
+        D2D1_ROUNDED_RECT roundRect2 =
+            D2D1::RoundedRect(D2D1::RectF(static_cast<float>(center2.x - 150),
+                                          static_cast<float>(center2.y - 150),
+                                          static_cast<float>(center2.x + 100),
+                                          static_cast<float>(center2.y + 100)),
+                              16.0f, 16.0f);
+        pRenderTarget->DrawRoundedRectangle(&roundRect2, pBrush2, 8.0f);
+        pBrush2->Release();
+      }
+    } // @@@end
     pRenderTarget->EndDraw();
     EndPaint(hWnd, &paint);
   }
@@ -163,6 +167,10 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
     x = x > 400.0f ? 0.0f : x + 5.0f;
     y = y > 300.0f ? 0.0f : y + 5.0f;
   }
+if (FAILED(SendMessage(hWnd, WM_DESTROY, 0, 0)) {
+    Log->Fail(L"Failed to send message", GetCurrentThreadId(), __LONGFILE__);
+    return E_FAIL;
+}
 
   Log->Info(L"End highlight paint loop thread", GetCurrentThreadId(),
             __LONGFILE__);
@@ -213,6 +221,8 @@ DWORD WINAPI highlightLoop(LPVOID context) {
   wndClass.hIconSm = nullptr;
 
   if (!RegisterClassEx(&wndClass)) {
+    Log->Fail(L"Failed to call RegisterClassEx", GetCurrentThreadId(),
+              __LONGFILE__);
     return E_FAIL;
   }
 
@@ -234,12 +244,16 @@ DWORD WINAPI highlightLoop(LPVOID context) {
                    static_cast<void *>(highlightPaintLoopCtx), 0, nullptr);
 
   if (highlightPaintLoopThread == nullptr) {
+    Log->Fail(L"Failed to create thread", GetCurrentThreadId(), __LONGFILE__);
     return E_FAIL;
   }
   while (GetMessage(&msg, nullptr, 0, 0) != 0) {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
   }
+
+  WaitForSingleObject(highlightPaintLoopThread, INFINITE);
+  SafeCloseHandle(&highlightPaintLoopThread);
 
   CoUninitialize();
 
