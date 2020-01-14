@@ -28,7 +28,8 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
       break;
     }
 
-    D2D1_SIZE_U pixelSize = {createStruct->cx, createStruct->cy};
+    D2D1_SIZE_U pixelSize = {static_cast<UINT32>(createStruct->cx),
+                             static_cast<UINT32>(createStruct->cy)};
     D2D1_RENDER_TARGET_PROPERTIES renderTargetProperties =
         D2D1::RenderTargetProperties();
     D2D1_HWND_RENDER_TARGET_PROPERTIES hwndRenderTargetProperties =
@@ -135,7 +136,7 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
     }
 
     D2D1_SIZE_F targetSize = pRenderTarget->GetSize();
-    PAINTSTRUCT paint;
+    // PAINTSTRUCT paint;
 
     InvalidateRect(hWnd, nullptr, true);
     HDC hDC = GetDC(hWnd);
