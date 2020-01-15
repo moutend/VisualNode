@@ -202,11 +202,11 @@ DWORD WINAPI highlightLoop(LPVOID context) {
     return hr;
   }
 
+  int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+  int screenHeight = GetSystemMetrics(SM_CYSCREEN);
   wchar_t *str = new wchar_t[256]{};
 
-  hr = StringCbPrintfW(str, 255, L"Screen=(%d,%d)",
-                       GetSystemMetrics(SM_CXSCREEN),
-                       GetSystemMetrics(SM_CYSCREEN));
+  hr = StringCbPrintfW(str, 255, L"Screen=(%d,%d)", screenWidth, screenHeight);
 
   if (FAILED(hr)) {
     Log->Fail(L"Failed to get system metrics", GetCurrentThreadId(),
@@ -249,8 +249,8 @@ DWORD WINAPI highlightLoop(LPVOID context) {
 
   hWnd = CreateWindowEx(
       WS_EX_COMPOSITED | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST,
-      wndClass.lpszClassName, windowName, WS_POPUP, CW_USEDEFAULT,
-      CW_USEDEFAULT, 640, 480, nullptr, nullptr, hInstance, nullptr);
+      wndClass.lpszClassName, windowName, WS_POPUP, 0, 0, screenWidth,
+      screenHeight, nullptr, nullptr, hInstance, nullptr);
 
   SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
