@@ -204,7 +204,7 @@ DWORD WINAPI highlightLoop(LPVOID context) {
 
   wchar_t *str = new wchar_t[256]{};
 
-  hr = StringCbPrintfW(str, 255, L"Screen=(%d,%d)\n",
+  hr = StringCbPrintfW(str, 255, L"Screen=(%d,%d)",
                        GetSystemMetrics(SM_CXSCREEN),
                        GetSystemMetrics(SM_CYSCREEN));
 
