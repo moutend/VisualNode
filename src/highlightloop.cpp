@@ -24,8 +24,7 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   } break;
   case WM_CREATE: {
     Log->Info(L"WM_CREATE received", GetCurrentThreadId(), __LONGFILE__);
-    SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 128,
-                               LWA_COLORKEY | LWA_ALPHA);
+    SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 0, LWA_COLORKEY);
     CREATESTRUCT *createStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
     HRESULT hr =
         D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2d1Factory);
@@ -68,8 +67,8 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     BeginPaint(hWnd, &paint);
     pRenderTarget->BeginDraw();
 
-    D2D1_COLOR_F blackColor = {0.0f, 0.0f, 0.0f, 1.0f};
-    pRenderTarget->Clear(blackColor);
+    D2D1_COLOR_F redColor = {1.0f, 0.0f, 0.0f, 1.0f};
+    pRenderTarget->Clear(redColor);
 
     { // @@@begin
       ID2D1SolidColorBrush *pBrush{};
