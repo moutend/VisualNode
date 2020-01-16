@@ -116,7 +116,7 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 
 struct HighlightPaintLoopContext {
   HANDLE QuitEvent = nullptr;
-  HANDLE HighlightEvent = nullptr;
+  HANDLE PaintEvent = nullptr;
   HWND TargetWindow = nullptr;
   bool IsActive = true;
   float Left = 0.0f;
