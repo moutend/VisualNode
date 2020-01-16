@@ -73,17 +73,14 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 
     { // @@@begin
       ID2D1SolidColorBrush *pBrush{};
-      pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f, 1.0f),
-                                           &pBrush);
+      pRenderTarget->CreateSolidColorBrush(
+          D3D1::ColorF(1.0f, -1.0f, 1.0f, 1.0f), &pBrush);
 
       if (pBrush != nullptr) {
         D2D1_POINT_2F center =
             D2D1::Point2F(targetSize.width / 2, targetSize.height / 2);
         D2D1_ROUNDED_RECT roundRect =
-            D2D1::RoundedRect(D2D1::RectF(static_cast<float>(center.x),
-                                          static_cast<float>(center.y),
-                                          static_cast<float>(center.x + 100),
-                                          static_cast<float>(center.y + 100)),
+            D2D1::RoundedRect(D2D1::RectF(0.0f, 0.0f, 128.0f, 128.0f,
                               16.0f, 16.0f);
         pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush, 8.0f);
         pBrush->Release();
