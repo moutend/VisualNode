@@ -72,6 +72,14 @@ void __stdcall Setup(int32_t *code, int32_t logLevel) {
     *code = -1;
     return;
   }
+  highlightLoopCtx->PaintEvent =
+      CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
+
+  if (highlightLoopCtx->PaintEvent == nullptr) {
+    Log->Fail(L"Failed to create event", GetCurrentThreadId(), __LONGFILE__);
+    *code = -1;
+    return;
+  }
 
   Log->Info(L"Create highlight loop thread", GetCurrentThreadId(),
             __LONGFILE__);

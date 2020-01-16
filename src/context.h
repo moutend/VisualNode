@@ -10,4 +10,5 @@ struct LogLoopContext {
 
 struct HighlightLoopContext {
   HANDLE QuitEvent = nullptr;
+  HANDLE PaintEvent = nullptr;
 };

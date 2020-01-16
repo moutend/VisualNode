@@ -20,10 +20,10 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                      LPARAM lParam) {
   switch (uMsg) {
   case WM_DISPLAYCHANGE: {
-    Log->Info(L"Modify highlight window", GetCurrentThreadId(), __LONGFILE__);
+    Log->Info(L"WM_DISPLAYCHANGE received", GetCurrentThreadId(), __LONGFILE__);
   } break;
   case WM_CREATE: {
-    Log->Info(L"Create highlight window", GetCurrentThreadId(), __LONGFILE__);
+    Log->Info(L"WM_CREATE received", GetCurrentThreadId(), __LONGFILE__);
     SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 128,
                                LWA_COLORKEY | LWA_ALPHA);
     CREATESTRUCT *createStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
@@ -55,18 +55,22 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     ShowWindow(hWnd, SW_SHOW);
   } break;
   case WM_DESTROY: {
-    Log->Info(L"Destroy highlight window", GetCurrentThreadId(), __LONGFILE__);
+    Log->Info(L"WM_DESTROY received", GetCurrentThreadId(), __LONGFILE__);
     SafeRelease(&pRenderTarget);
     SafeRelease(&pD2d1Factory);
     PostQuitMessage(0);
   } break;
   case WM_PAINT: {
+    Log->Info(L"WM_PAINT received", GetCurrentThreadId(), __LONGFILE__);
+
     D2D1_SIZE_F targetSize = pRenderTarget->GetSize();
     PAINTSTRUCT paint;
     BeginPaint(hWnd, &paint);
     pRenderTarget->BeginDraw();
-    D2D1_COLOR_F blackColor = {1.0f, 0.0f, 0.0f, 1.0f};
+
+    D2D1_COLOR_F blackColor = {0.0f, 0.0f, 0.0f, 1.0f};
     pRenderTarget->Clear(blackColor);
+
     { // @@@begin
       ID2D1SolidColorBrush *pBrush{};
       pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f, 1.0f),
@@ -112,7 +116,14 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 
 struct HighlightPaintLoopContext {
   HANDLE QuitEvent = nullptr;
+  HANDLE HighlightEvent = nullptr;
   HWND TargetWindow = nullptr;
+  float Left = 0.0f;
+  float Top = 0.0f;
+  float Width = 50.0f;
+  float Height = 50.0f;
+  float Radius = 10.0f;
+  float BorderThickness = 5.0f;
 };
 
 DWORD WINAPI highlightPaintLoop(LPVOID context) {
@@ -126,33 +137,33 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
     return E_FAIL;
   }
 
-  HWND hWnd = ctx->TargetWindow;
-  float x{};
-  float y{};
-  bool isActive{true};
-
-  while (isActive) {
-    HANDLE waitArray[1] = {ctx->QuitEvent};
-    DWORD waitResult = WaitForMultipleObjects(1, waitArray, FALSE, 0);
+  while (ctx->IsActive) {
+    HANDLE waitArray[1] = {ctx->QuitEvent, ctx->PaintEvent};
+    DWORD waitResult = WaitForMultipleObjects(2, waitArray, FALSE, INFINITE);
 
     if (waitResult == WAIT_OBJECT_0 + 0) {
-      isActive = false;
+      ctx->IsActive = false;
       continue;
     }
-
-    Sleep(100);
-
     if (pRenderTarget == nullptr) {
+      Log->Warn(L"Direct2D rendering is not available", GetCurrentThreadId(),
+                __LONGFILE__);
+      continue;
+    }
+    if (ctx->TargetWindow == nullptr) {
+      Log->Warn(L"Highlight window is not created yet", GetCurrentThreadId(),
+                __LONGFILE__);
       continue;
     }
 
     D2D1_SIZE_F targetSize = pRenderTarget->GetSize();
-    // PAINTSTRUCT paint;
 
-    InvalidateRect(hWnd, nullptr, true);
-    HDC hDC = GetDC(hWnd);
+    InvalidateRect(ctx->TargetWindow, nullptr, true);
+    HDC hDC = GetDC(ctx->TargetWindow);
+
     pRenderTarget->BeginDraw();
-    D2D1_COLOR_F blackColor = {1.0f, 0.0f, 0.0f, 1.0f};
+
+    D2D1_COLOR_F blackColor = {0.0f, 0.0f, 0.0f, 1.0f};
     pRenderTarget->Clear(blackColor);
 
     ID2D1SolidColorBrush *pBrush{};
@@ -160,21 +171,18 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
                                          &pBrush);
 
     if (pBrush != nullptr) {
-      D2D1_POINT_2F center =
-          D2D1::Point2F(targetSize.width / 2, targetSize.height / 2);
       D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
-          D2D1::RectF(x, y, x + 80.0f, y + 80.0f), 16.0f, 16.0f);
-      pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush, 8.0f);
+          D2D1::RectF(ctx->Left, ctx->Top, ctx->Width, ctx->Height),
+          ctx->Radius, ctx->Radius);
+      pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush,
+                                          ctx->BorderThickness);
       pBrush->Release();
     }
 
     pRenderTarget->EndDraw();
-    ReleaseDC(hWnd, hDC);
-
-    x = x > 400.0f ? 0.0f : x + 5.0f;
-    y = y > 300.0f ? 0.0f : y + 5.0f;
+    ReleaseDC(ctx->TargetWindow, hDC);
   }
-  if (FAILED(SendMessage(hWnd, WM_DESTROY, 0, 0))) {
+  if (FAILED(SendMessage(ctx->TargetWindow, WM_DESTROY, 0, 0))) {
     Log->Fail(L"Failed to send message", GetCurrentThreadId(), __LONGFILE__);
     return E_FAIL;
   }
@@ -202,63 +210,11 @@ DWORD WINAPI highlightLoop(LPVOID context) {
     return hr;
   }
 
-  int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-  int screenHeight = GetSystemMetrics(SM_CYSCREEN);
-  wchar_t *str = new wchar_t[256]{};
-
-  hr = StringCbPrintfW(str, 255, L"Screen=(%d,%d)", screenWidth, screenHeight);
-
-  if (FAILED(hr)) {
-    Log->Fail(L"Failed to get system metrics", GetCurrentThreadId(),
-              __LONGFILE__);
-    return hr;
-  }
-
-  Log->Info(str, GetCurrentThreadId(), __LONGFILE__);
-
-  WNDCLASSEX wndClass;
-  HINSTANCE hInstance;
-  HWND hWnd;
-  MSG msg;
-
-  char windowName[] = "ScreenReaderX Highlight Rectangle";
-  char className[] = "MainWindowClass";
-  char *menuName{};
-
-  hInstance = GetModuleHandle(nullptr);
-  menuName = MAKEINTRESOURCE(nullptr);
-
-  wndClass.cbSize = sizeof(WNDCLASSEX);
-  wndClass.style = CS_HREDRAW | CS_VREDRAW;
-  wndClass.lpfnWndProc = highlightWindowProc;
-  wndClass.cbClsExtra = 0;
-  wndClass.cbWndExtra = 0;
-  wndClass.hInstance = hInstance;
-  wndClass.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
-  wndClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
-  wndClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-  wndClass.lpszMenuName = menuName;
-  wndClass.lpszClassName = className;
-  wndClass.hIconSm = nullptr;
-
-  if (!RegisterClassEx(&wndClass)) {
-    Log->Fail(L"Failed to call RegisterClassEx", GetCurrentThreadId(),
-              __LONGFILE__);
-    return E_FAIL;
-  }
-
-  hWnd = CreateWindowEx(
-      WS_EX_COMPOSITED | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST,
-      wndClass.lpszClassName, windowName, WS_POPUP, 0, 0, screenWidth,
-      screenHeight, nullptr, nullptr, hInstance, nullptr);
-
-  SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-
   HighlightPaintLoopContext *highlightPaintLoopCtx =
       new HighlightPaintLoopContext;
 
-  highlightPaintLoopCtx->TargetWindow = hWnd;
   highlightPaintLoopCtx->QuitEvent = ctx->QuitEvent;
+  highlightPaintLoopCtx->PaintEvent = ctx->PaintEvent;
 
   HANDLE highlightPaintLoopThread =
       CreateThread(nullptr, 0, highlightPaintLoop,
@@ -268,9 +224,67 @@ DWORD WINAPI highlightLoop(LPVOID context) {
     Log->Fail(L"Failed to create thread", GetCurrentThreadId(), __LONGFILE__);
     return E_FAIL;
   }
-  while (GetMessage(&msg, nullptr, 0, 0) != 0) {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
+
+  while (highlightPaintLoopCtx->IsActive) {
+    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+    wchar_t *str = new wchar_t[256]{};
+
+    HRESULT hr =
+        StringCbPrintfW(str, 255, L"Screen=(%d,%d)", screenWidth, screenHeight);
+
+    if (FAILED(hr)) {
+      Log->Fail(L"Failed to get system metrics", GetCurrentThreadId(),
+                __LONGFILE__);
+      return hr;
+    }
+
+    Log->Info(str, GetCurrentThreadId(), __LONGFILE__);
+
+    WNDCLASSEX wndClass;
+    HINSTANCE hInstance;
+    HWND hWnd;
+    MSG msg;
+
+    char windowName[] = "ScreenReaderX Highlight Rectangle";
+    char className[] = "MainWindowClass";
+    char *menuName{};
+
+    hInstance = GetModuleHandle(nullptr);
+    menuName = MAKEINTRESOURCE(nullptr);
+
+    wndClass.cbSize = sizeof(WNDCLASSEX);
+    wndClass.style = CS_HREDRAW | CS_VREDRAW;
+    wndClass.lpfnWndProc = highlightWindowProc;
+    wndClass.cbClsExtra = 0;
+    wndClass.cbWndExtra = 0;
+    wndClass.hInstance = hInstance;
+    wndClass.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
+    wndClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wndClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wndClass.lpszMenuName = menuName;
+    wndClass.lpszClassName = className;
+    wndClass.hIconSm = nullptr;
+
+    if (!RegisterClassEx(&wndClass)) {
+      Log->Fail(L"Failed to call RegisterClassEx", GetCurrentThreadId(),
+                __LONGFILE__);
+      return E_FAIL;
+    }
+
+    hWnd = CreateWindowEx(
+        WS_EX_COMPOSITED | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST,
+        wndClass.lpszClassName, windowName, WS_POPUP, 0, 0, screenWidth,
+        screenHeight, nullptr, nullptr, hInstance, nullptr);
+
+    SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
+    highlightPaintLoopCtx->TargetWindow = hWnd;
+
+    while (GetMessage(&msg, nullptr, 0, 0) != 0) {
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
+    }
   }
 
   WaitForSingleObject(highlightPaintLoopThread, INFINITE);
