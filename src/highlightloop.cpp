@@ -73,7 +73,7 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 
     { // @@@begin
       ID2D1SolidColorBrush *pBrush{};
-      pRenderTarget->CreateSolidColorBrush(D3D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f),
+      pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f),
                                            &pBrush);
 
       if (pBrush != nullptr) {
