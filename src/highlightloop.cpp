@@ -139,7 +139,7 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
   }
 
   while (ctx->IsActive) {
-    HANDLE waitArray[1] = {ctx->QuitEvent, ctx->PaintEvent};
+    HANDLE waitArray[2] = {ctx->QuitEvent, ctx->PaintEvent};
     DWORD waitResult = WaitForMultipleObjects(2, waitArray, FALSE, INFINITE);
 
     if (waitResult == WAIT_OBJECT_0 + 0) {
