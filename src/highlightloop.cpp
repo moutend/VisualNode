@@ -118,6 +118,7 @@ struct HighlightPaintLoopContext {
   HANDLE QuitEvent = nullptr;
   HANDLE HighlightEvent = nullptr;
   HWND TargetWindow = nullptr;
+  bool IsActive = true;
   float Left = 0.0f;
   float Top = 0.0f;
   float Width = 50.0f;
