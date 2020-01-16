@@ -286,6 +286,8 @@ DWORD WINAPI highlightLoop(LPVOID context) {
       TranslateMessage(&msg);
       DispatchMessage(&msg);
     }
+
+    // msg.wParam;
   }
 
   WaitForSingleObject(highlightPaintLoopThread, INFINITE);
@@ -295,5 +297,5 @@ DWORD WINAPI highlightLoop(LPVOID context) {
 
   Log->Info(L"End highlight loop thread", GetCurrentThreadId(), __LONGFILE__);
 
-  return msg.wParam;
+  return S_OK;
 }
