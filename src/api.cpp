@@ -64,7 +64,7 @@ void __stdcall Setup(int32_t *code, int32_t logLevel) {
 
   highlightLoopCtx = new HighlightLoopContext();
 
-  highlightLoopCtx->HighlightRectangle = new HighlightRectangle;
+  highlightLoopCtx->HighlightRect = new HighlightRectangle;
   highlightLoopCtx->QuitEvent =
       CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
 
