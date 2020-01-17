@@ -64,6 +64,7 @@ void __stdcall Setup(int32_t *code, int32_t logLevel) {
 
   highlightLoopCtx = new HighlightLoopContext();
 
+  highlightLoopCtx->HighlightRectangle = new HighlightRectangle;
   highlightLoopCtx->QuitEvent =
       CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
 
@@ -124,6 +125,9 @@ void __stdcall Teardown(int32_t *code) {
 
   SafeCloseHandle(&(highlightLoopCtx->QuitEvent));
 
+  delete highlightLoopCtx->HighlightRect;
+  highlightLoopCtx->HighlightRect = nullptr;
+
   delete highlightLoopCtx;
   highlightLoopCtx = nullptr;
 
@@ -156,10 +160,10 @@ END_LOGLOOP_CLEANUP:
   isActive = false;
 }
 
-void __stdcall SetHighlightRectangle(int32_t *code) {
+void __stdcall SetHighlightRectangle(int32_t *code, HighlightRectangle *rect) {
   std::lock_guard<std::mutex> lock(apiMutex);
 
-  if (code == nullptr) {
+  if (code == nullptr || rect == nullptr) {
     return;
   }
   if (!isActive) {
@@ -170,7 +174,18 @@ void __stdcall SetHighlightRectangle(int32_t *code) {
   Log->Info(L"Called SetHighlightRectangle()", GetCurrentThreadId(),
             __LONGFILE__);
 
-  // TODO: implement me!
+  highlightLoopCtx->HighlightRect->Left = rect->Left;
+  highlightLoopCtx->HighlightRect->Top = rect->Top;
+  highlightLoopCtx->HighlightRect->Width = rect->Width;
+  highlightLoopCtx->HighlightRect->Height = rect->Height;
+  highlightLoopCtx->HighlightRect->Radius = rect->Radius;
+  highlightLoopCtx->HighlightRect->BorderThickness = rect->BorderThickness;
+
+  if (!SetEvent(highlightLoopCtx->PaintEvent)) {
+    Log->Fail(L"Failed to send event", GetCurrentThreadId(), __LONGFILE__);
+    *code = -1;
+    return;
+  }
 }
 
 void __stdcall ClearHighlightRectangle(int32_t *code) {

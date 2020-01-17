@@ -2,13 +2,13 @@
 #include <windows.h>
 
 #include <d2d1.h>
+#include <strsafe.h>
 #include <wincodec.h>
 #include <wincodecsdk.h>
 
-#include <strsafe.h>
-
 #include "context.h"
 #include "highlightloop.h"
+#include "types.h"
 #include "util.h"
 
 extern Logger::Logger *Log;
@@ -96,12 +96,7 @@ struct HighlightPaintLoopContext {
   HANDLE PaintEvent = nullptr;
   HWND TargetWindow = nullptr;
   bool IsActive = true;
-  float Left = 0.0f;
-  float Top = 0.0f;
-  float Width = 50.0f;
-  float Height = 50.0f;
-  float Radius = 10.0f;
-  float BorderThickness = 5.0f;
+  HighlightRectangle *HighlightRect = nullptr;
 };
 
 DWORD WINAPI highlightPaintLoop(LPVOID context) {
@@ -141,19 +136,21 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
 
     pRenderTarget->BeginDraw();
 
-    D2D1_COLOR_F blackColor = {0.0f, 0.0f, 0.0f, 1.0f};
-    pRenderTarget->Clear(blackColor);
+    D2D1_COLOR_F redColor = {1.0f, 0.0f, 0.0f, 1.0f};
+    pRenderTarget->Clear(redColor);
 
     ID2D1SolidColorBrush *pBrush{};
     pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f),
                                          &pBrush);
 
-    if (pBrush != nullptr) {
+    if (pBrush != nullptr && ctx->HighlightRect->Width > 0.0f &&
+        ctx->HighlightRect->Height > 0.0f) {
       D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
-          D2D1::RectF(ctx->Left, ctx->Top, ctx->Width, ctx->Height),
-          ctx->Radius, ctx->Radius);
+          D2D1::RectF(ctx->HighlightRect->Left, ctx->HighlightRect->Top,
+                      ctx->HighlightRect->Width, ctx->HighlightRect->Height),
+          ctx->HighlightRect->Radius, ctx->HighlightRect->Radius);
       pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush,
-                                          ctx->BorderThickness);
+                                          ctx->HighlightRect->BorderThickness);
       pBrush->Release();
     }
 
@@ -193,6 +190,7 @@ DWORD WINAPI highlightLoop(LPVOID context) {
 
   highlightPaintLoopCtx->QuitEvent = ctx->QuitEvent;
   highlightPaintLoopCtx->PaintEvent = ctx->PaintEvent;
+  highlightPaintLoopCtx->HighlightRect = ctx->HighlightRect;
 
   HANDLE highlightPaintLoopThread =
       CreateThread(nullptr, 0, highlightPaintLoop,

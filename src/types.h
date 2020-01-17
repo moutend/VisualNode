@@ -3,8 +3,10 @@
 #include <cstdint>
 
 typedef struct {
-  int32_t Left = 0;
-  int32_t Top = 0;
-  int32_t Width = 0;
-  int32_t Height = 0;
+  float Left = 0;
+  float Top = 0;
+  float Width = 0;
+  float Height = 0;
+  float Radius;
+  float BorderThickness;
 } HighlightRectangle;
