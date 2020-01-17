@@ -57,6 +57,8 @@ type postVisualHighlightRequest struct {
 }
 
 func PostVisualHighlight(w http.ResponseWriter, r *http.Request) error {
+	log.Println("Called PostVisualHighlight")
+
 	var code int32
 	var req postVisualHighlightRequest
 
@@ -82,7 +84,7 @@ func PostVisualHighlight(w http.ResponseWriter, r *http.Request) error {
 	dll.ProcSetHighlightRectangle.Call(uintptr(unsafe.Pointer(&code)), uintptr(unsafe.Pointer(&rect)))
 
 	if code != 0 {
-		log.Println("Failed to call Teardown (code=%v)", code)
+		log.Println("Failed to call SetHighlightRectangle (code=%v)", code)
 		return fmt.Errorf("Internal error")
 	}
 	if _, err := io.WriteString(w, "{}"); err != nil {
