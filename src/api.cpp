@@ -65,6 +65,7 @@ void __stdcall Setup(int32_t *code, int32_t logLevel) {
   highlightLoopCtx = new HighlightLoopContext();
 
   highlightLoopCtx->HighlightRect = new HighlightRectangle;
+  highlightLoopCtx->HighlightRect->BorderColor = new RGBAColor;
   highlightLoopCtx->QuitEvent =
       CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
 
@@ -125,6 +126,9 @@ void __stdcall Teardown(int32_t *code) {
 
   SafeCloseHandle(&(highlightLoopCtx->QuitEvent));
 
+  delete highlightLoopCtx->HighlightRect->BorderColor;
+  highlightLoopCtx->HighlightRect->BorderColor = nullptr;
+
   delete highlightLoopCtx->HighlightRect;
   highlightLoopCtx->HighlightRect = nullptr;
 
@@ -181,6 +185,15 @@ void __stdcall SetHighlightRectangle(int32_t *code, HighlightRectangle *rect) {
   highlightLoopCtx->HighlightRect->Radius = rect->Radius;
   highlightLoopCtx->HighlightRect->BorderThickness = rect->BorderThickness;
 
+  if (rect->BorderColor != nullptr) {
+    highlightLoopCtx->HighlightRect->BorderColor->Red = rect->BorderColor->Red;
+    highlightLoopCtx->HighlightRect->BorderColor->Green =
+        rect->BorderColor->Green;
+    highlightLoopCtx->HighlightRect->BorderColor->Blue =
+        rect->BorderColor->Blue;
+    highlightLoopCtx->HighlightRect->BorderColor->Alpha =
+        rect->BorderColor->Alpha;
+  }
   if (!SetEvent(highlightLoopCtx->PaintEvent)) {
     Log->Fail(L"Failed to send event", GetCurrentThreadId(), __LONGFILE__);
     *code = -1;

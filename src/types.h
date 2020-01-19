@@ -9,4 +9,12 @@ typedef struct {
   float Height = 0;
   float Radius;
   float BorderThickness;
+  RGBAColor *BorderColor;
 } HighlightRectangle;
+
+typedef struct {
+  float Red = 0;
+  float Green = 0;
+  float Blue = 0;
+  float Alpha = 0;
+} RGBAColor;
