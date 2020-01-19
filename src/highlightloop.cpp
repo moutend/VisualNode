@@ -22,10 +22,14 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   switch (uMsg) {
   case WM_DISPLAYCHANGE: {
     Log->Info(L"WM_DISPLAYCHANGE received", GetCurrentThreadId(), __LONGFILE__);
+    SafeRelease(&pRenderTarget);
+    SafeRelease(&pD2d1Factory);
+    PostQuitMessage(0);
   } break;
   case WM_CREATE: {
     Log->Info(L"WM_CREATE received", GetCurrentThreadId(), __LONGFILE__);
     SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 0, LWA_COLORKEY);
+
     CREATESTRUCT *createStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
     HRESULT hr =
         D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2d1Factory);
@@ -42,7 +46,7 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
         D2D1::RenderTargetProperties();
     D2D1_HWND_RENDER_TARGET_PROPERTIES hwndRenderTargetProperties =
         D2D1::HwndRenderTargetProperties(hWnd, pixelSize);
-    SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64, LWA_COLORKEY);
+    // SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 64, LWA_COLORKEY);
     hr = pD2d1Factory->CreateHwndRenderTarget(
         renderTargetProperties, hwndRenderTargetProperties, &pRenderTarget);
 
