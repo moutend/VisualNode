@@ -64,6 +64,11 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     SafeRelease(&pD2d1Factory);
     PostQuitMessage(0);
   } break;
+  case WM_CLOSE: {
+    Log->Info(L"WM_CLOSE received", GetCurrentThreadId(), __LONGFILE__);
+    // Ignore this message.
+  } break;
+
   case WM_PAINT: {
     Log->Info(L"WM_PAINT received", GetCurrentThreadId(), __LONGFILE__);
 
