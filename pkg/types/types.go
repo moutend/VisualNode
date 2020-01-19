@@ -7,4 +7,12 @@ type HighlightRectangle struct {
 	Height          uint32
 	Radius          uint32
 	BorderThickness uint32
+	BorderColor     uintptr
+}
+
+type RGBAColor struct {
+	Red   uint32
+	Green uint32
+	Blue  uint32
+	Alpha uint32
 }
