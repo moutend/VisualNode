@@ -261,7 +261,7 @@ DWORD WINAPI highlightLoop(LPVOID context) {
     if (FAILED(hr)) {
       Log->Fail(L"Failed to get system metrics", GetCurrentThreadId(),
                 __LONGFILE__);
-      return hr;
+      break;
     }
 
     Log->Info(str, GetCurrentThreadId(), __LONGFILE__);
@@ -294,7 +294,7 @@ DWORD WINAPI highlightLoop(LPVOID context) {
     if (!RegisterClassEx(&wndClass)) {
       Log->Fail(L"Failed to call RegisterClassEx", GetCurrentThreadId(),
                 __LONGFILE__);
-      return E_FAIL;
+      break;
     }
 
     hWnd = CreateWindowEx(
@@ -310,8 +310,11 @@ DWORD WINAPI highlightLoop(LPVOID context) {
       TranslateMessage(&msg);
       DispatchMessage(&msg);
     }
-
-    // msg.wParam;
+    if (UnregisterClassA(className, hInstance) == 0) {
+      Log->Fail(L"Failed to call UnregisterClass", GetCurrentThreadId(),
+                __LONGFILE__);
+      break;
+    }
   }
 
   WaitForSingleObject(highlightPaintLoopThread, INFINITE);
