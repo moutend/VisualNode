@@ -184,7 +184,7 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
         highlightRect->Height > 0.0f) {
       D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
           D2D1::RectF(highlightRect->Left, highlightRect->Top,
-                      highlightRect->Left + ctxhighlightRect->Width,
+                      highlightRect->Left + highlightRect->Width,
                       highlightRect->Top + highlightRect->Height),
           highlightRect->Radius, highlightRect->Radius);
 
