@@ -143,7 +143,7 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
                         ctx->HighlightRect->BorderColor->Red,
                         ctx->HighlightRect->BorderColor->Green,
                         ctx->HighlightRect->BorderColor->Blue,
-                        ctx->HighlightRect->BorderColor->Alpha)
+                        ctx->HighlightRect->BorderColor->Alpha);
 
             if (FAILED(hr)) {
       Log->Warn(L"Failed to build log message", GetCurrentThreadId(),
