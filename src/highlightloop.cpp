@@ -129,23 +129,22 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
       continue;
     }
 
-    wchar_t *buffer = new wchar_t[256]{};
+    wchar_t *buffer = new wchar_t[512]{};
 
-    HRESULT hr =
-        StringCbPrintfW(buffer, 255,
-                        L"Highlight rectangle = {x:%.1f, y:%.1f, width:%.1f, "
-                        L"height:%.1f, radius:%.1f, border:%.1f, "
-                        L"color:(red:%.1f, green:%.1f, blue:%.1f, alpha:%.1f)}",
-                        ctx->HighlightRect->Left, ctx->HighlightRect->Top,
-                        ctx->HighlightRect->Width, ctx->HighlightRect->Height,
-                        ctx->HighlightRect->Radius,
-                        ctx->HighlightRect->BorderThickness,
-                        ctx->HighlightRect->BorderColor->Red,
-                        ctx->HighlightRect->BorderColor->Green,
-                        ctx->HighlightRect->BorderColor->Blue,
-                        ctx->HighlightRect->BorderColor->Alpha);
+    HRESULT hr = StringCbPrintfW(
+        buffer, 511,
+        L"Highlight rectangle = {x:%.1f, y:%.1f, width:%.1f, "
+        L"height:%.1f, radius:%.1f, border:%.1f, "
+        L"color:(red:%.1f, green:%.1f, blue:%.1f, alpha:%.1f)}",
+        ctx->HighlightRect->Left, ctx->HighlightRect->Top,
+        ctx->HighlightRect->Width, ctx->HighlightRect->Height,
+        ctx->HighlightRect->Radius, ctx->HighlightRect->BorderThickness,
+        ctx->HighlightRect->BorderColor->Red,
+        ctx->HighlightRect->BorderColor->Green,
+        ctx->HighlightRect->BorderColor->Blue,
+        ctx->HighlightRect->BorderColor->Alpha);
 
-            if (FAILED(hr)) {
+    if (FAILED(hr)) {
       Log->Warn(L"Failed to build log message", GetCurrentThreadId(),
                 __LONGFILE__);
       continue;
