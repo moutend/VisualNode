@@ -79,7 +79,9 @@ func PostVisualHighlight(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	borderColor := &types.RGBAColor{}
+	log.Printf("req=%+v\n", req)
+
+	borderColor := types.RGBAColor{}
 
 	borderColor.Red = math.Float32bits(req.BorderColor.Red)
 	borderColor.Green = math.Float32bits(req.BorderColor.Green)
