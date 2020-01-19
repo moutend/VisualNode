@@ -1,6 +1,11 @@
 #pragma once
 
-#include <cstdint>
+typedef struct {
+  float Red = 0;
+  float Green = 0;
+  float Blue = 0;
+  float Alpha = 0;
+} RGBAColor;
 
 typedef struct {
   float Left = 0;
@@ -11,10 +16,3 @@ typedef struct {
   float BorderThickness;
   RGBAColor *BorderColor;
 } HighlightRectangle;
-
-typedef struct {
-  float Red = 0;
-  float Green = 0;
-  float Blue = 0;
-  float Alpha = 0;
-} RGBAColor;
