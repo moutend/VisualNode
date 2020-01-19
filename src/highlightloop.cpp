@@ -132,7 +132,7 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
     wchar_t *buffer = new wchar_t[256]{};
 
     HRESULT hr =
-        StringCbPrintfW(str, 255,
+        StringCbPrintfW(buffer, 255,
                         L"Highlight rectangle = {x:%.1f, y:%.1f, width:%.1f, "
                         L"height:%.1f, radius:%.1f, border:%.1f, "
                         L"color:(red:%.1f, green:%.1f, blue:%.1f, alpha:%.1f)}",
@@ -150,6 +150,11 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
                 __LONGFILE__);
       continue;
     }
+
+    Log->Info(buffer, GetCurrentThreadId(), __LONGFILE__);
+
+    delete[] buffer;
+    buffer = nullptr;
 
     D2D1_SIZE_F targetSize = pRenderTarget->GetSize();
 
