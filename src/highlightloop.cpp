@@ -15,6 +15,7 @@ extern Logger::Logger *Log;
 
 ID2D1Factory *pD2d1Factory{};
 ID2D1HwndRenderTarget *pRenderTarget{};
+HighlightRectangle *highlightRect{};
 
 LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                      LPARAM lParam) {
@@ -70,18 +71,27 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     D2D1_COLOR_F redColor = {1.0f, 0.0f, 0.0f, 1.0f};
     pRenderTarget->Clear(redColor);
 
-    { // @@@begin
+    if (highlightRect->Width > 0.0f && highlightRect->Height > 0.0f) {
       ID2D1SolidColorBrush *pBrush{};
-      pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f),
-                                           &pBrush);
+      pRenderTarget->CreateSolidColorBrush(
+          D2D1::ColorF(highlightRect->BorderColor->Red,
+                       highlightRect->BorderColor->Green,
+                       highlightRect->BorderColor->Blue,
+                       highlightRect->BorderColor->Alpha),
+          &pBrush);
 
       if (pBrush != nullptr) {
         D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
-            D2D1::RectF(0.0f, 0.0f, 128.0f, 128.0f), 16.0f, 16.0f);
-        pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush, 8.0f);
+            D2D1::RectF(highlightRect->Left, highlightRect->Top,
+                        highlightRect->Left + highlightRect->Width,
+                        highlightRect->Top + highlightRect->Height),
+            highlightRect->Radius, highlightRect->Radius);
+
+        pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush,
+                                            highlightRect->BorderThickness);
         pBrush->Release();
       }
-    } // @@@end
+    }
 
     pRenderTarget->EndDraw();
     EndPaint(hWnd, &paint);
@@ -96,7 +106,6 @@ struct HighlightPaintLoopContext {
   HANDLE PaintEvent = nullptr;
   HWND TargetWindow = nullptr;
   bool IsActive = true;
-  HighlightRectangle *HighlightRect = nullptr;
 };
 
 DWORD WINAPI highlightPaintLoop(LPVOID context) {
@@ -136,13 +145,11 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
         L"Highlight rectangle = {x:%.1f, y:%.1f, width:%.1f, "
         L"height:%.1f, radius:%.1f, border:%.1f, "
         L"color:(red:%.1f, green:%.1f, blue:%.1f, alpha:%.1f)}",
-        ctx->HighlightRect->Left, ctx->HighlightRect->Top,
-        ctx->HighlightRect->Width, ctx->HighlightRect->Height,
-        ctx->HighlightRect->Radius, ctx->HighlightRect->BorderThickness,
-        ctx->HighlightRect->BorderColor->Red,
-        ctx->HighlightRect->BorderColor->Green,
-        ctx->HighlightRect->BorderColor->Blue,
-        ctx->HighlightRect->BorderColor->Alpha);
+        highlightRect->Left, highlightRect->Top, highlightRect->Width,
+        highlightRect->Height, highlightRect->Radius,
+        highlightRect->BorderThickness, highlightRect->BorderColor->Red,
+        highlightRect->BorderColor->Green, highlightRect->BorderColor->Blue,
+        highlightRect->BorderColor->Alpha);
 
     if (FAILED(hr)) {
       Log->Warn(L"Failed to build log message", GetCurrentThreadId(),
@@ -167,21 +174,22 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
 
     ID2D1SolidColorBrush *pBrush{};
     pRenderTarget->CreateSolidColorBrush(
-        D2D1::ColorF(ctx->HighlightRect->BorderColor->Red,
-                     ctx->HighlightRect->BorderColor->Green,
-                     ctx->HighlightRect->BorderColor->Blue,
-                     ctx->HighlightRect->BorderColor->Alpha),
+        D2D1::ColorF(highlightRect->BorderColor->Red,
+                     highlightRect->BorderColor->Green,
+                     highlightRect->BorderColor->Blue,
+                     highlightRect->BorderColor->Alpha),
         &pBrush);
 
-    if (pBrush != nullptr && ctx->HighlightRect->Width > 0.0f &&
-        ctx->HighlightRect->Height > 0.0f) {
+    if (pBrush != nullptr && highlightRect->Width > 0.0f &&
+        highlightRect->Height > 0.0f) {
       D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
-          D2D1::RectF(ctx->HighlightRect->Left, ctx->HighlightRect->Top,
-                      ctx->HighlightRect->Left + ctx->HighlightRect->Width,
-                      ctx->HighlightRect->Top + ctx->HighlightRect->Height),
-          ctx->HighlightRect->Radius, ctx->HighlightRect->Radius);
+          D2D1::RectF(highlightRect->Left, highlightRect->Top,
+                      highlightRect->Left + ctxhighlightRect->Width,
+                      highlightRect->Top + highlightRect->Height),
+          highlightRect->Radius, highlightRect->Radius);
+
       pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush,
-                                          ctx->HighlightRect->BorderThickness);
+                                          highlightRect->BorderThickness);
       pBrush->Release();
     }
 
@@ -216,12 +224,13 @@ DWORD WINAPI highlightLoop(LPVOID context) {
     return hr;
   }
 
+  highlightRect = ctx->HighlightRect;
+
   HighlightPaintLoopContext *highlightPaintLoopCtx =
       new HighlightPaintLoopContext;
 
   highlightPaintLoopCtx->QuitEvent = ctx->QuitEvent;
   highlightPaintLoopCtx->PaintEvent = ctx->PaintEvent;
-  highlightPaintLoopCtx->HighlightRect = ctx->HighlightRect;
 
   HANDLE highlightPaintLoopThread =
       CreateThread(nullptr, 0, highlightPaintLoop,
