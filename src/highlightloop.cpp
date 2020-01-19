@@ -177,7 +177,8 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
         ctx->HighlightRect->Height > 0.0f) {
       D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
           D2D1::RectF(ctx->HighlightRect->Left, ctx->HighlightRect->Top,
-                      ctx->HighlightRect->Width, ctx->HighlightRect->Height),
+                      ctx->HighlightRect->Left + ctx->HighlightRect->Width,
+                      ctx->HighlightRect->Top + ctx->HighlightRect->Height),
           ctx->HighlightRect->Radius, ctx->HighlightRect->Radius);
       pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush,
                                           ctx->HighlightRect->BorderThickness);
