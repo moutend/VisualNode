@@ -20,13 +20,6 @@ HighlightRectangle *highlightRect{};
 LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                      LPARAM lParam) {
   switch (uMsg) {
-  case WM_DISPLAYCHANGE: {
-    Log->Info(L"WM_DISPLAYCHANGE received", GetCurrentThreadId(), __LONGFILE__);
-    Sleep(10000);
-    SafeRelease(&pRenderTarget);
-    SafeRelease(&pD2d1Factory);
-    PostQuitMessage(0);
-  } break;
   case WM_CREATE: {
     Log->Info(L"WM_CREATE received", GetCurrentThreadId(), __LONGFILE__);
     SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 0, LWA_COLORKEY);
@@ -59,6 +52,10 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 
     ShowWindow(hWnd, SW_SHOW);
   } break;
+  case WM_DISPLAYCHANGE: {
+    Log->Info(L"WM_DISPLAYCHANGE received", GetCurrentThreadId(), __LONGFILE__);
+    DestroyWindow(hWnd);
+  } break;
   case WM_DESTROY: {
     Log->Info(L"WM_DESTROY received", GetCurrentThreadId(), __LONGFILE__);
     SafeRelease(&pRenderTarget);
@@ -68,11 +65,16 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   case WM_CLOSE: {
     Log->Info(L"WM_CLOSE received", GetCurrentThreadId(), __LONGFILE__);
     // Ignore this message.
-  } break;
-
+  }
+    return 0;
   case WM_PAINT: {
     Log->Info(L"WM_PAINT received", GetCurrentThreadId(), __LONGFILE__);
 
+    if (pRenderTarget == nullptr || pD2d1Factory == nullptr) {
+      Log->Info(L"Direct2D painting is not available", GetCurrentThreadId(),
+                __LONGFILE__);
+      break;
+    }
     D2D1_SIZE_F targetSize = pRenderTarget->GetSize();
     PAINTSTRUCT paint;
     BeginPaint(hWnd, &paint);
