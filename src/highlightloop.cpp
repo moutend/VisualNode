@@ -22,7 +22,7 @@ HRESULT drawHighlightRectangle() {
   pRenderTarget->Clear(redColor);
 
   if (highlightRect->Width <= 0.0f && highlightRect->Height <= 0.0f) {
-    return;
+    return S_OK;
   }
 
   ID2D1SolidColorBrush *pBrush{};
@@ -33,7 +33,7 @@ HRESULT drawHighlightRectangle() {
       &pBrush);
 
   if (pBrush == nullptr) {
-    return;
+    return E_FAIL;
   }
 
   D2D1_ROUNDED_RECT roundRect =
