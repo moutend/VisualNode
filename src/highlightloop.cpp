@@ -262,8 +262,8 @@ DWORD WINAPI highlightLoop(LPVOID context) {
     HWND hWnd;
     MSG msg;
 
-    char windowName[] = "ScreenReaderX Highlight Rectangle";
-    char className[] = "MainWindowClass";
+    char windowName[] = "ScreenReaderX Highlight Window";
+    char className[] = "MainHighlightWindowClass";
     char *menuName{};
 
     hInstance = GetModuleHandle(nullptr);
