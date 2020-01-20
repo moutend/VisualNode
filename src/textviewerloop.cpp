@@ -31,7 +31,7 @@ HRESULT drawTextViewer() {
       D2D1::RoundedRect(D2D1::RectF(0.0f, 0.0f, 600.0f, 64.0f), 8.0f, 8.0f);
 
   pTextViewerRenderTarget->FillRoundedRectangle(&roundRect, pBackgroundBrush);
-  pBrush->Release();
+  pBackgroundBrush->Release();
 
   wchar_t *buffer = new wchar_t[512]{};
 
@@ -92,8 +92,8 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   } break;
   case WM_DESTROY: {
     Log->Info(L"WM_DESTROY received", GetCurrentThreadId(), __LONGFILE__);
-    SafeRelease(&pRenderTarget);
-    SafeRelease(&pD2d1Factory);
+    SafeRelease(&pTextViewerRenderTarget);
+    SafeRelease(&pTextViewerD2d1Factory);
     PostQuitMessage(0);
   } break;
   case WM_CLOSE: {
