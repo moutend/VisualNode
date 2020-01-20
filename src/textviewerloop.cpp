@@ -21,7 +21,7 @@ HRESULT drawTextViewer() {
 
   ID2D1SolidColorBrush *pBackgroundBrush{};
   pTextViewerRenderTarget->CreateSolidColorBrush(
-      D2D1::ColorF(1.0f, 0.0f, 0.0f, 0.75f), &pBackgroundBrush);
+      D2D1::ColorF(0.0f, 0.0f, 0.0f, 1.0f), &pBackgroundBrush);
 
   if (pBackgroundBrush == nullptr) {
     return E_FAIL;
@@ -56,7 +56,8 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   switch (uMsg) {
   case WM_CREATE: {
     Log->Info(L"WM_CREATE received", GetCurrentThreadId(), __LONGFILE__);
-    SetLayeredWindowAttributes(hWnd, RGB(255, 0, 0), 0, LWA_COLORKEY);
+    SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), 128,
+                               LWA_ALPHA | LWA_COLORKEY);
 
     CREATESTRUCT *createStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
     HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,
