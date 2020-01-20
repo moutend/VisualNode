@@ -235,7 +235,8 @@ DWORD WINAPI textViewerLoop(LPVOID context) {
         screenWidth > defaultWindowWidth ? defaultWindowWidth : screenWidth;
     windowHeight = defaultWindowHeight;
 
-    int windowLeft = screenWidth > windowWidth ? screenWidth - windowWidth : 0;
+    int windowLeft =
+        screenWidth > (windowWidth - 32) ? screenWidth - windowWidth - 32 : 0;
     int windowTop = screenHeight - windowHeight - 48;
     wchar_t *buffer = new wchar_t[256]{};
 
