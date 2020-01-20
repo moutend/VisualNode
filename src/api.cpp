@@ -98,33 +98,41 @@ void __stdcall Setup(int32_t *code, int32_t logLevel) {
     *code = -1;
     return;
   }
-}
 
-textViewerLoopCtx = new TextViewerLoopContext;
+  textViewerLoopCtx = new TextViewerLoopContext;
 
-highlightLoopCtx->QuitEvent =
-    CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
+  textViewerLoopCtx->QuitEvent =
+      CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
 
-if (highlightLoopCtx->QuitEvent == nullptr) {
-  Log->Fail(L"Failed to create event", GetCurrentThreadId(), __LONGFILE__);
-  *code = -1;
-  return;
-}
+  if (textViewerLoopCtx->QuitEvent == nullptr) {
+    Log->Fail(L"Failed to create event", GetCurrentThreadId(), __LONGFILE__);
+    *code = -1;
+    return;
+  }
 
-Log->Info(L"Create text viewer loop thread", GetCurrentThreadId(),
-          __LONGFILE__);
+  textViewerLoopCtx->PaintEvent =
+      CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
 
-textViewerLoopThread =
-    CreateThread(nullptr, 0, textViewerLoop,
-                 static_cast<void *>(textViewerLoopCtx), 0, nullptr);
+  if (textViewerLoopCtx->PaintEvent == nullptr) {
+    Log->Fail(L"Failed to create event", GetCurrentThreadId(), __LONGFILE__);
+    *code = -1;
+    return;
+  }
 
-if (textViewerLoopThread == nullptr) {
-  Log->Fail(L"Failed to create thread", GetCurrentThreadId(), __LONGFILE__);
-  *code = -1;
-  return;
-}
+  Log->Info(L"Create text viewer loop thread", GetCurrentThreadId(),
+            __LONGFILE__);
 
-Log->Info(L"Complete setup VisualNode", GetCurrentThreadId(), __LONGFILE__);
+  textViewerLoopThread =
+      CreateThread(nullptr, 0, textViewerLoop,
+                   static_cast<void *>(textViewerLoopCtx), 0, nullptr);
+
+  if (textViewerLoopThread == nullptr) {
+    Log->Fail(L"Failed to create thread", GetCurrentThreadId(), __LONGFILE__);
+    *code = -1;
+    return;
+  }
+
+  Log->Info(L"Complete setup VisualNode", GetCurrentThreadId(), __LONGFILE__);
 }
 
 void __stdcall Teardown(int32_t *code) {
@@ -153,6 +161,7 @@ void __stdcall Teardown(int32_t *code) {
   SafeCloseHandle(&highlightLoopThread);
 
   SafeCloseHandle(&(highlightLoopCtx->QuitEvent));
+  SafeCloseHandle(&(highlightLoopCtx->PaintEvent));
 
   delete highlightLoopCtx->HighlightRect->BorderColor;
   highlightLoopCtx->HighlightRect->BorderColor = nullptr;
@@ -167,6 +176,29 @@ void __stdcall Teardown(int32_t *code) {
             __LONGFILE__);
 
 END_HIGHLIGHTLOOP_CLEANUP:
+
+  if (textViewerLoopThread == nullptr) {
+    goto END_TEXTVIEWERLOOP_CLEANUP;
+  }
+  if (!SetEvent(textViewerLoopCtx->QuitEvent)) {
+    Log->Fail(L"Failed to send event", GetCurrentThreadId(), __LONGFILE__);
+    *code = -1;
+    return;
+  }
+
+  WaitForSingleObject(textViewerLoopThread, INFINITE);
+  SafeCloseHandle(&textViewerLoopThread);
+
+  SafeCloseHandle(&(textViewerLoopCtx->QuitEvent));
+  SafeCloseHandle(&(textViewerLoopCtx->PaintEvent));
+
+  delete textViewerLoopCtx;
+  textViewerLoopCtx = nullptr;
+
+  Log->Info(L"Delete text viewer loop thread", GetCurrentThreadId(),
+            __LONGFILE__);
+
+END_TEXTVIEWERLOOP_CLEANUP:
 
   Log->Info(L"Complete teardown AudioNode", GetCurrentThreadId(), __LONGFILE__);
 
