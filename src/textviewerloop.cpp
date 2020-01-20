@@ -29,11 +29,23 @@ HRESULT drawTextViewer() {
     return E_FAIL;
   }
 
+  ID2D1SolidColorBrush *pBorderBrush{};
+  pTextViewerRenderTarget->CreateSolidColorBrush(
+      D2D1::ColorF(0.875f, 0.875f, 0.875f, 1.0f), &pBorderBrush);
+
+  if (pBorderBrush == nullptr) {
+    return E_FAIL;
+  }
+
   D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
-      D2D1::RectF(0.0f, 0.0f, windowWidth, windowHeight), 32.0f, 32.0f);
+      D2D1::RectF(4.0f, 4.0f, windowWidth - 8.0f, windowHeight - 8.0f), 8.0f,
+      8.0f);
 
   pTextViewerRenderTarget->FillRoundedRectangle(&roundRect, pBackgroundBrush);
   pBackgroundBrush->Release();
+
+  pTextViewerRenderTarget->DrawRoundedRectangle(&roundRect, pBorderBrush, 2.0f);
+  pBorderBrush->Release();
 
   wchar_t *buffer = new wchar_t[512]{};
 
