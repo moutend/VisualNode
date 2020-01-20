@@ -21,7 +21,7 @@ HRESULT drawTextViewer() {
 
   ID2D1SolidColorBrush *pBackgroundBrush{};
   pTextViewerRenderTarget->CreateSolidColorBrush(
-      D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.75f), &pBackgroundBrush);
+      D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.25f), &pBackgroundBrush);
 
   if (pBackgroundBrush == nullptr) {
     return E_FAIL;
