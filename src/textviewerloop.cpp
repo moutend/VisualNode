@@ -30,7 +30,7 @@ HRESULT drawTextViewer() {
   }
 
   D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
-      D2D1::RectF(0.0f, 0.0f, windowWidth, windowHeight), 8.0f, 8.0f);
+      D2D1::RectF(0.0f, 0.0f, windowWidth, windowHeight), 32.0f, 32.0f);
 
   pTextViewerRenderTarget->FillRoundedRectangle(&roundRect, pBackgroundBrush);
   pBackgroundBrush->Release();
