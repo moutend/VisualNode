@@ -296,8 +296,6 @@ DWORD WINAPI textViewerLoop(LPVOID context) {
     SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
     textViewerPaintLoopCtx->TargetWindow = hWnd;
-    textViewerPaintLoopCtx->WindowWidth = windowWidth;
-    textViewerPaintLoopCtx->WindowHeight = windowHeight;
 
     while (GetMessage(&msg, nullptr, 0, 0) != 0) {
       TranslateMessage(&msg);
