@@ -22,6 +22,7 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   switch (uMsg) {
   case WM_DISPLAYCHANGE: {
     Log->Info(L"WM_DISPLAYCHANGE received", GetCurrentThreadId(), __LONGFILE__);
+    Sleep(10000);
     SafeRelease(&pRenderTarget);
     SafeRelease(&pD2d1Factory);
     PostQuitMessage(0);
