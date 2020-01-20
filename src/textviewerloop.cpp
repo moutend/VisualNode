@@ -14,6 +14,8 @@ extern Logger::Logger *Log;
 
 ID2D1Factory *pTextViewerD2d1Factory{};
 ID2D1HwndRenderTarget *pTextViewerRenderTarget{};
+int windowWidth{};
+int windowHeight{};
 
 HRESULT drawTextViewer() {
   D2D1_COLOR_F redColor = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -21,16 +23,16 @@ HRESULT drawTextViewer() {
 
   ID2D1SolidColorBrush *pBackgroundBrush{};
   pTextViewerRenderTarget->CreateSolidColorBrush(
-      D2D1::ColorF(0.0f, 0.0f, 0.0f, 1.0f), &pBackgroundBrush);
+      D2D1::ColorF(0.125f, 0.125f, 0.125f, 1.0f), &pBackgroundBrush);
 
   if (pBackgroundBrush == nullptr) {
     return E_FAIL;
   }
 
-  D2D1_ROUNDED_RECT roundRect =
-      D2D1::RoundedRect(D2D1::RectF(0.0f, 0.0f, 600.0f, 64.0f), 8.0f, 8.0f);
+  D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
+      D2D1::RectF(0.0f, 0.0f, windowWidth, windowHeight), 8.0f, 8.0f);
 
-  // pTextViewerRenderTarget->FillRoundedRectangle(&roundRect, pBackgroundBrush);
+  pTextViewerRenderTarget->FillRoundedRectangle(&roundRect, pBackgroundBrush);
   pBackgroundBrush->Release();
 
   wchar_t *buffer = new wchar_t[512]{};
@@ -56,8 +58,7 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   switch (uMsg) {
   case WM_CREATE: {
     Log->Info(L"WM_CREATE received", GetCurrentThreadId(), __LONGFILE__);
-    SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), 192,
-                               LWA_ALPHA | LWA_COLORKEY);
+    SetLayeredWindowAttributes(hWnd, RGB(256, 0, 0), 0, LWA_COLORKEY);
 
     CREATESTRUCT *createStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
     HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,
@@ -223,13 +224,26 @@ DWORD WINAPI textViewerLoop(LPVOID context) {
     return E_FAIL;
   }
 
+  const int defaultWindowWidth{640};
+  const int defaultWindowHeight{80};
+
   while (textViewerPaintLoopCtx->IsActive) {
     int screenWidth = GetSystemMetrics(SM_CXSCREEN);
     int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+    windowWidth =
+        screenWidth > defaultWindowWidth ? defaultWindowWidth : screenWidth;
+    windowHeight = defaultWindowHeight;
+
+    int windowLeft = screenWidth > windowWidth ? screenWidth - windowWidth : 0;
+    int windowTop = screenHeight - windowHeight - 48;
     wchar_t *buffer = new wchar_t[256]{};
 
-    HRESULT hr = StringCbPrintfW(buffer, 255, L"Screen resolution: %d x %d",
-                                 screenWidth, screenHeight);
+    HRESULT hr = StringCbPrintfW(buffer, 255,
+                                 L"Screen: {width:%d, height:%d}, Window: "
+                                 L"{left:%d, top:%d, width:%d, height:%d}",
+                                 screenWidth, screenHeight, windowLeft,
+                                 windowTop, windowWidth, windowHeight);
 
     if (FAILED(hr)) {
       Log->Fail(L"Failed to get system metrics", GetCurrentThreadId(),
@@ -275,12 +289,14 @@ DWORD WINAPI textViewerLoop(LPVOID context) {
 
     hWnd = CreateWindowEx(
         WS_EX_COMPOSITED | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST,
-        wndClass.lpszClassName, windowName, WS_POPUP, 0, 0, screenWidth / 2, 80,
-        nullptr, nullptr, hInstance, nullptr);
+        wndClass.lpszClassName, windowName, WS_POPUP, windowLeft, windowTop,
+        windowWidth, windowHeight, nullptr, nullptr, hInstance, nullptr);
 
     SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
     textViewerPaintLoopCtx->TargetWindow = hWnd;
+    textViewerPaintLoopCtx->WindowWidth = windowWidth;
+    textViewerPaintLoopCtx->WindowHeight = windowHeight;
 
     while (GetMessage(&msg, nullptr, 0, 0) != 0) {
       TranslateMessage(&msg);
