@@ -30,7 +30,7 @@ HRESULT drawTextViewer() {
   D2D1_ROUNDED_RECT roundRect =
       D2D1::RoundedRect(D2D1::RectF(0.0f, 0.0f, 600.0f, 64.0f), 8.0f, 8.0f);
 
-  pTextViewerRenderTarget->FillRoundedRectangle(&roundRect, pBackgroundBrush);
+  // pTextViewerRenderTarget->FillRoundedRectangle(&roundRect, pBackgroundBrush);
   pBackgroundBrush->Release();
 
   wchar_t *buffer = new wchar_t[512]{};
@@ -56,7 +56,7 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
   switch (uMsg) {
   case WM_CREATE: {
     Log->Info(L"WM_CREATE received", GetCurrentThreadId(), __LONGFILE__);
-    SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), 128,
+    SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), 192,
                                LWA_ALPHA | LWA_COLORKEY);
 
     CREATESTRUCT *createStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
