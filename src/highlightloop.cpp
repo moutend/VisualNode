@@ -134,7 +134,7 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     BeginPaint(hWnd, &paint);
     pRenderTarget->BeginDraw();
 
-    if (FAILED(drawHighlightRectangle)) {
+    if (FAILED(drawHighlightRectangle())) {
       Log->Warn(L"Failed to draw highlight rectangle", GetCurrentThreadId(),
                 __LONGFILE__);
     }
@@ -188,7 +188,7 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
     HDC hDC = GetDC(ctx->TargetWindow);
     pRenderTarget->BeginDraw();
 
-    if (FAILED(drawHighlightRectangle)) {
+    if (FAILED(drawHighlightRectangle())) {
       Log->Warn(L"Failed to draw highlight rectangle", GetCurrentThreadId(),
                 __LONGFILE__);
     }
