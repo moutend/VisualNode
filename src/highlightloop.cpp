@@ -17,6 +17,60 @@ ID2D1Factory *pD2d1Factory{};
 ID2D1HwndRenderTarget *pRenderTarget{};
 HighlightRectangle *highlightRect{};
 
+HRESULT drawHighlightRectangle() {
+  D2D1_COLOR_F redColor = {1.0f, 0.0f, 0.0f, 1.0f};
+  pRenderTarget->Clear(redColor);
+
+  if (highlightRect->Width <= 0.0f && highlightRect->Height <= 0.0f) {
+    return;
+  }
+
+  ID2D1SolidColorBrush *pBrush{};
+  pRenderTarget->CreateSolidColorBrush(
+      D2D1::ColorF(
+          highlightRect->BorderColor->Red, highlightRect->BorderColor->Green,
+          highlightRect->BorderColor->Blue, highlightRect->BorderColor->Alpha),
+      &pBrush);
+
+  if (pBrush == nullptr) {
+    return;
+  }
+
+  D2D1_ROUNDED_RECT roundRect =
+      D2D1::RoundedRect(D2D1::RectF(highlightRect->Left, highlightRect->Top,
+                                    highlightRect->Left + highlightRect->Width,
+                                    highlightRect->Top + highlightRect->Height),
+                        highlightRect->Radius, highlightRect->Radius);
+
+  pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush,
+                                      highlightRect->BorderThickness);
+  pBrush->Release();
+
+  wchar_t *buffer = new wchar_t[512]{};
+
+  HRESULT hr = StringCbPrintfW(
+      buffer, 511,
+      L"Highlight rectangle = {x:%.1f, y:%.1f, width:%.1f, "
+      L"height:%.1f, radius:%.1f, border:%.1f, "
+      L"color:(red:%.1f, green:%.1f, blue:%.1f, alpha:%.1f)}",
+      highlightRect->Left, highlightRect->Top, highlightRect->Width,
+      highlightRect->Height, highlightRect->Radius,
+      highlightRect->BorderThickness, highlightRect->BorderColor->Red,
+      highlightRect->BorderColor->Green, highlightRect->BorderColor->Blue,
+      highlightRect->BorderColor->Alpha);
+
+  if (FAILED(hr)) {
+    return hr;
+  }
+
+  Log->Info(buffer, GetCurrentThreadId(), __LONGFILE__);
+
+  delete[] buffer;
+  buffer = nullptr;
+
+  return S_OK;
+}
+
 LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                      LPARAM lParam) {
   switch (uMsg) {
@@ -75,40 +129,20 @@ LRESULT CALLBACK highlightWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                 __LONGFILE__);
       break;
     }
-    D2D1_SIZE_F targetSize = pRenderTarget->GetSize();
+
     PAINTSTRUCT paint;
     BeginPaint(hWnd, &paint);
     pRenderTarget->BeginDraw();
 
-    D2D1_COLOR_F redColor = {1.0f, 0.0f, 0.0f, 1.0f};
-    pRenderTarget->Clear(redColor);
-
-    if (highlightRect->Width > 0.0f && highlightRect->Height > 0.0f) {
-      ID2D1SolidColorBrush *pBrush{};
-      pRenderTarget->CreateSolidColorBrush(
-          D2D1::ColorF(highlightRect->BorderColor->Red,
-                       highlightRect->BorderColor->Green,
-                       highlightRect->BorderColor->Blue,
-                       highlightRect->BorderColor->Alpha),
-          &pBrush);
-
-      if (pBrush != nullptr) {
-        D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
-            D2D1::RectF(highlightRect->Left, highlightRect->Top,
-                        highlightRect->Left + highlightRect->Width,
-                        highlightRect->Top + highlightRect->Height),
-            highlightRect->Radius, highlightRect->Radius);
-
-        pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush,
-                                            highlightRect->BorderThickness);
-        pBrush->Release();
-      }
+    if (FAILED(drawHighlightRectangle)) {
+      Log->Warn(L"Failed to draw highlight rectangle", GetCurrentThreadId(),
+                __LONGFILE__);
     }
 
     pRenderTarget->EndDraw();
     EndPaint(hWnd, &paint);
   }
-    return false;
+    return 0;
   }
   return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
@@ -139,70 +173,24 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
       ctx->IsActive = false;
       continue;
     }
-    if (pRenderTarget == nullptr) {
-      Log->Warn(L"Direct2D rendering is not available", GetCurrentThreadId(),
-                __LONGFILE__);
-      continue;
-    }
     if (ctx->TargetWindow == nullptr) {
       Log->Warn(L"Highlight window is not created yet", GetCurrentThreadId(),
                 __LONGFILE__);
       continue;
     }
-
-    wchar_t *buffer = new wchar_t[512]{};
-
-    HRESULT hr = StringCbPrintfW(
-        buffer, 511,
-        L"Highlight rectangle = {x:%.1f, y:%.1f, width:%.1f, "
-        L"height:%.1f, radius:%.1f, border:%.1f, "
-        L"color:(red:%.1f, green:%.1f, blue:%.1f, alpha:%.1f)}",
-        highlightRect->Left, highlightRect->Top, highlightRect->Width,
-        highlightRect->Height, highlightRect->Radius,
-        highlightRect->BorderThickness, highlightRect->BorderColor->Red,
-        highlightRect->BorderColor->Green, highlightRect->BorderColor->Blue,
-        highlightRect->BorderColor->Alpha);
-
-    if (FAILED(hr)) {
-      Log->Warn(L"Failed to build log message", GetCurrentThreadId(),
+    if (pRenderTarget == nullptr || pD2d1Factory == nullptr) {
+      Log->Info(L"Direct2D painting is not available", GetCurrentThreadId(),
                 __LONGFILE__);
       continue;
     }
 
-    Log->Info(buffer, GetCurrentThreadId(), __LONGFILE__);
-
-    delete[] buffer;
-    buffer = nullptr;
-
-    D2D1_SIZE_F targetSize = pRenderTarget->GetSize();
-
     InvalidateRect(ctx->TargetWindow, nullptr, true);
     HDC hDC = GetDC(ctx->TargetWindow);
-
     pRenderTarget->BeginDraw();
 
-    D2D1_COLOR_F redColor = {1.0f, 0.0f, 0.0f, 1.0f};
-    pRenderTarget->Clear(redColor);
-
-    ID2D1SolidColorBrush *pBrush{};
-    pRenderTarget->CreateSolidColorBrush(
-        D2D1::ColorF(highlightRect->BorderColor->Red,
-                     highlightRect->BorderColor->Green,
-                     highlightRect->BorderColor->Blue,
-                     highlightRect->BorderColor->Alpha),
-        &pBrush);
-
-    if (pBrush != nullptr && highlightRect->Width > 0.0f &&
-        highlightRect->Height > 0.0f) {
-      D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
-          D2D1::RectF(highlightRect->Left, highlightRect->Top,
-                      highlightRect->Left + highlightRect->Width,
-                      highlightRect->Top + highlightRect->Height),
-          highlightRect->Radius, highlightRect->Radius);
-
-      pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush,
-                                          highlightRect->BorderThickness);
-      pBrush->Release();
+    if (FAILED(drawHighlightRectangle)) {
+      Log->Warn(L"Failed to draw highlight rectangle", GetCurrentThreadId(),
+                __LONGFILE__);
     }
 
     pRenderTarget->EndDraw();
