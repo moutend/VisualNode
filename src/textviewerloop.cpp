@@ -1,4 +1,5 @@
 #include <cpplogger/cpplogger.h>
+#include <cstring>
 #include <windows.h>
 
 #include <d2d1.h>
@@ -21,7 +22,7 @@ IDWriteTextFormat *pTextViewerTextFormat{};
 int windowWidth{};
 int windowHeight{};
 
-wchar_t *textToDraw{};
+TextViewerLoopContext *tvlCtx {}
 
 HRESULT drawTextViewer() {
   D2D1_COLOR_F redColor = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -61,9 +62,10 @@ HRESULT drawTextViewer() {
   pTextViewerRenderTarget->DrawRoundedRectangle(&roundRect, pBorderBrush, 2.0f);
   pBorderBrush->Release();
 
-  if (textToDraw != nullptr) {
+  if (tvlCtx->TextToDraw != nullptr) {
     pTextViewerRenderTarget->DrawText(
-        textToDraw, std::wcslen(textToDraw), pTextViewerTextFormat,
+        tvlCtx->TextToDraw, std::wcslen(tvlCtx->TextToDraw),
+        pTextViewerTextFormat,
         D2D1::RectF(32, 32, windowWidth - 64, windowHeight - 32), pTextBrush);
     pTextBrush->Release();
   }
@@ -269,7 +271,7 @@ DWORD WINAPI textViewerLoop(LPVOID context) {
     return hr;
   }
 
-  textToDraw = ctx->TextToDraw;
+  tvlCtx = ctx;
 
   TextViewerPaintLoopContext *textViewerPaintLoopCtx =
       new TextViewerPaintLoopContext;
