@@ -2,6 +2,7 @@
 #include <windows.h>
 
 #include <d2d1.h>
+#include <dwrite.h>
 #include <strsafe.h>
 #include <wincodec.h>
 #include <wincodecsdk.h>
@@ -14,6 +15,9 @@ extern Logger::Logger *Log;
 
 ID2D1Factory *pTextViewerD2d1Factory{};
 ID2D1HwndRenderTarget *pTextViewerRenderTarget{};
+IDWriteFactory *pTextViewerDWriteFactory{};
+IDWriteTextFormat *pTextViewerTextFormat{};
+
 int windowWidth{};
 int windowHeight{};
 
@@ -37,6 +41,14 @@ HRESULT drawTextViewer() {
     return E_FAIL;
   }
 
+  ID2D1SolidColorBrush *pTextBrush{};
+  pTextViewerRenderTarget->CreateSolidColorBrush(
+      D2D1::ColorF(0.875f, 0.875f, 0.875f, 1.0f), &pTextVrush);
+
+  if (pTextBrush == nullptr) {
+    return E_FAIL;
+  }
+
   D2D1_ROUNDED_RECT roundRect = D2D1::RoundedRect(
       D2D1::RectF(4.0f, 4.0f, windowWidth - 8.0f, windowHeight - 8.0f), 8.0f,
       8.0f);
@@ -46,6 +58,11 @@ HRESULT drawTextViewer() {
 
   pTextViewerRenderTarget->DrawRoundedRectangle(&roundRect, pBorderBrush, 2.0f);
   pBorderBrush->Release();
+
+  pTextViewerRenderTarget->DrawText(
+      L"Hello, World!", 14, pTextViewerTextFormat,
+      D2D1::RectF(32, 32, windowWidth - 64, windowHeight - 32), pTextBrush);
+  pTextBrush->Release();
 
   wchar_t *buffer = new wchar_t[512]{};
 
@@ -95,8 +112,35 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     if (FAILED(hr)) {
       Log->Fail(L"Failed to call ID2D1Factory::CreateHwndRenderTarget",
                 GetCurrentThreadId(), __LONGFILE__);
+      pTextViewerRenderTarget = nullptr;
       break;
     }
+
+    hr = DWriteCreateFactory(
+        DWRITE_FACTORY_TYPE_SHARED, __uuidof(pTextViewerDWriteFactory),
+        reinterpret_cast<IUnknown **>(&pTextViewerDWriteFactory));
+
+    if (FAILED(hr)) {
+      Log->Fail(L"Failed to call DWriteCreateFactory", GetCurrentThreadId(),
+                __LONGFILE__);
+      pTextViewerDWriteFactory = nullptr;
+      break;
+    }
+
+    hr = pTextViewerDWriteFactory->CreateTextFormat(
+        L"Gothic", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
+        DWRITE_FONT_STRETCH_NORMAL, 16.0f, L"", &pTextViewerTextFormat);
+
+    if (FAILED(hr)) {
+      Log->Fail(L"Failed to call CreateTextFormat", GetCurrentThreadId(),
+                __LONGFILE__);
+      pTextViewerDWriteFactory = nullptr;
+      break;
+    }
+
+    pTextViewerTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+    pTextViewerTextFormat->SetParagraphAlignment(
+        DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
     ShowWindow(hWnd, SW_SHOW);
   } break;
