@@ -75,7 +75,8 @@ HRESULT drawTextViewer() {
   wchar_t *buffer = new wchar_t[512]{};
 
   HRESULT hr =
-      StringCbPrintfW(buffer, 511, L"render text '%s'", tvlCtx->TextToDraw);
+      StringCbPrintfW(buffer, 511, L"render text '%s' (%d chars)",
+                      tvlCtx->TextToDraw, std::wcslen(tvlCtx->TextToDraw));
 
   if (FAILED(hr)) {
     return hr;
@@ -136,7 +137,7 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 
     hr = pTextViewerDWriteFactory->CreateTextFormat(
         L"Meiryo", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
-        DWRITE_FONT_STRETCH_NORMAL, 16.0f, L"ja-jp", &pTextViewerTextFormat);
+        DWRITE_FONT_STRETCH_NORMAL, 16.0f, L"", &pTextViewerTextFormat);
 
     if (FAILED(hr)) {
       Log->Fail(L"Failed to call CreateTextFormat", GetCurrentThreadId(),
