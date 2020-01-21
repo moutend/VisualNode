@@ -136,7 +136,7 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 
     hr = pTextViewerDWriteFactory->CreateTextFormat(
         L"Meiryo", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
-        DWRITE_FONT_STRETCH_NORMAL, 16.0f, L"", &pTextViewerTextFormat);
+        DWRITE_FONT_STRETCH_NORMAL, 16.0f, L"ja-jp", &pTextViewerTextFormat);
 
     if (FAILED(hr)) {
       Log->Fail(L"Failed to call CreateTextFormat", GetCurrentThreadId(),
