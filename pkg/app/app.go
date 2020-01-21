@@ -23,6 +23,7 @@ func (a *app) setup() error {
 	mux.Get("/v1/visual/enable", api.GetVisualEnable)
 	mux.Get("/v1/visual/disable", api.GetVisualDisable)
 	mux.Post("/v1/visual/highlight", api.PostVisualHighlight)
+	mux.Post("/v1/visual/text", api.PostVisualText)
 
 	a.server = &http.Server{
 		Addr:    ":7904",
