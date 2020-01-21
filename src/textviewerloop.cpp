@@ -43,7 +43,7 @@ HRESULT drawTextViewer() {
 
   ID2D1SolidColorBrush *pTextBrush{};
   pTextViewerRenderTarget->CreateSolidColorBrush(
-      D2D1::ColorF(0.875f, 0.875f, 0.875f, 1.0f), &pTextVrush);
+      D2D1::ColorF(0.875f, 0.875f, 0.875f, 1.0f), &pTextBrush);
 
   if (pTextBrush == nullptr) {
     return E_FAIL;
