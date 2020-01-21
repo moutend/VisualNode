@@ -74,9 +74,8 @@ HRESULT drawTextViewer() {
 
   wchar_t *buffer = new wchar_t[512]{};
 
-  HRESULT hr = StringCbPrintfW(
-      buffer, 511,
-      L"Text viewer = {left:0.0, top:0.0, width:600.0, height:64.0}");
+  HRESULT hr =
+      StringCbPrintfW(buffer, 511, L"render text '%s'", tvlCtx->TextToDraw);
 
   if (FAILED(hr)) {
     return hr;
