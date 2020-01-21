@@ -17,5 +17,5 @@ struct HighlightLoopContext {
 struct TextViewerLoopContext {
   HANDLE QuitEvent = nullptr;
   HANDLE PaintEvent = nullptr;
-  wchar_t *Text = nullptr;
+  wchar_t *TextToDraw = nullptr;
 };

@@ -101,6 +101,9 @@ void __stdcall Setup(int32_t *code, int32_t logLevel) {
 
   textViewerLoopCtx = new TextViewerLoopContext;
 
+  textViewerLoopCtx->TextToDraw = new wchar_t[7]{};
+  std::wmemcpy(textViewerLoopCtx->TextToDraw, L"Active", 6);
+
   textViewerLoopCtx->QuitEvent =
       CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
 
@@ -264,7 +267,7 @@ void __stdcall SetHighlightRectangle(int32_t *code, HighlightRectangle *rect) {
 void __stdcall SetText(int32_t *code, wchar_t *text) {
   std::lock_guard<std::mutex> lock(apiMutex);
 
-  if (code == nullptr) {
+  if (code == nullptr || text == nullptr) {
     return;
   }
   if (!isActive) {
@@ -274,5 +277,18 @@ void __stdcall SetText(int32_t *code, wchar_t *text) {
 
   Log->Info(L"Called SetText()", GetCurrentThreadId(), __LONGFILE__);
 
-  // TODO: implement me!
+  if (textViewerLoopCtx->TextToDraw != nullptr) {
+    delete[] textViewerLoopCtx->TextToDraw;
+    textViewerLoopCtx->TextToDraw = nullptr;
+  }
+
+  size_t textLen = std::wcslen(text);
+  textViewerLoopCtx->TextToDraw = new wchar_t[textLen + 1]{};
+  std::wmemcpy(textViewerLoopCtx->TextToDraw, text, textLen);
+
+  if (!SetEvent(textViewerLoopCtx->PaintEvent)) {
+    Log->Fail(L"Failed to send event", GetCurrentThreadId(), __LONGFILE__);
+    *code = -1;
+    return;
+  }
 }

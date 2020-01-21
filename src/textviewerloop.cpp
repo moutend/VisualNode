@@ -21,6 +21,8 @@ IDWriteTextFormat *pTextViewerTextFormat{};
 int windowWidth{};
 int windowHeight{};
 
+wchar_t *textToDraw{};
+
 HRESULT drawTextViewer() {
   D2D1_COLOR_F redColor = {1.0f, 0.0f, 0.0f, 1.0f};
   pTextViewerRenderTarget->Clear(redColor);
@@ -59,10 +61,12 @@ HRESULT drawTextViewer() {
   pTextViewerRenderTarget->DrawRoundedRectangle(&roundRect, pBorderBrush, 2.0f);
   pBorderBrush->Release();
 
-  pTextViewerRenderTarget->DrawText(
-      L"Hello, World!", 14, pTextViewerTextFormat,
-      D2D1::RectF(32, 32, windowWidth - 64, windowHeight - 32), pTextBrush);
-  pTextBrush->Release();
+  if (textToDraw != nullptr) {
+    pTextViewerRenderTarget->DrawText(
+        textToDraw, std::wcslen(textToDraw), pTextViewerTextFormat,
+        D2D1::RectF(32, 32, windowWidth - 64, windowHeight - 32), pTextBrush);
+    pTextBrush->Release();
+  }
 
   wchar_t *buffer = new wchar_t[512]{};
 
@@ -138,7 +142,7 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
       break;
     }
 
-    pTextViewerTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+    pTextViewerTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
     pTextViewerTextFormat->SetParagraphAlignment(
         DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
@@ -264,6 +268,8 @@ DWORD WINAPI textViewerLoop(LPVOID context) {
     Log->Fail(L"Failed to initialize COM", GetCurrentThreadId(), __LONGFILE__);
     return hr;
   }
+
+  textToDraw = ctx->TextToDraw;
 
   TextViewerPaintLoopContext *textViewerPaintLoopCtx =
       new TextViewerPaintLoopContext;
