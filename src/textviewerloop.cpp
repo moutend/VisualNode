@@ -66,7 +66,9 @@ HRESULT drawTextViewer() {
     pTextViewerRenderTarget->DrawText(
         tvlCtx->TextToDraw, std::wcslen(tvlCtx->TextToDraw),
         pTextViewerTextFormat,
-        D2D1::RectF(32, 32, windowWidth - 64, windowHeight - 32), pTextBrush);
+        D2D1::RectF(32.0f, 32.0f, static_cast<float>(windowWidth - 64),
+                    static_cast<float>(windowHeight - 32)),
+        pTextBrush);
     pTextBrush->Release();
   }
 
