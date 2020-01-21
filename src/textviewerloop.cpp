@@ -22,7 +22,7 @@ IDWriteTextFormat *pTextViewerTextFormat{};
 int windowWidth{};
 int windowHeight{};
 
-TextViewerLoopContext *tvlCtx {}
+TextViewerLoopContext *tvlCtx{};
 
 HRESULT drawTextViewer() {
   D2D1_COLOR_F redColor = {1.0f, 0.0f, 0.0f, 1.0f};
