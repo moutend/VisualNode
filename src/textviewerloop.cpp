@@ -87,7 +87,7 @@ HRESULT drawTextViewer() {
 
   wchar_t *buffer = new wchar_t[512]{};
 
-  HRESULT hr =
+  hr =
       StringCbPrintfW(buffer, 511, L"render text '%s' (%d chars)",
                       tvlCtx->TextToDraw, std::wcslen(tvlCtx->TextToDraw));
 
