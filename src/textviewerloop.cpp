@@ -6,7 +6,7 @@
 #include <strsafe.h>
 
 #include "context.h"
-#include "textrender.h"
+#include "textviewerloop.h"
 #include "util.h"
 
 TextViewerLoopContext *tvlCtx{};
