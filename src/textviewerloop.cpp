@@ -17,7 +17,6 @@ extern Logger::Logger *Log;
 ID2D1Factory *pTextViewerD2d1Factory{};
 ID2D1HwndRenderTarget *pTextViewerRenderTarget{};
 IDWriteFactory *pTextViewerDWriteFactory{};
-IDWriteTextFormat *pTextViewerTextFormat{};
 
 int windowWidth{};
 int windowHeight{};
@@ -62,10 +61,24 @@ HRESULT drawTextViewer() {
   pTextViewerRenderTarget->DrawRoundedRectangle(&roundRect, pBorderBrush, 2.0f);
   pBorderBrush->Release();
 
+  IDWriteTextFormat *pTextFormat{};
+
+  hr = pTextViewerDWriteFactory->CreateTextFormat(
+      L"Meiryo", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
+      DWRITE_FONT_STRETCH_NORMAL, 16.0f, L"", &pTextFormat);
+
+  if (FAILED(hr)) {
+    Log->Fail(L"Failed to call CreateTextFormat", GetCurrentThreadId(),
+              __LONGFILE__);
+    return hr;
+  }
+
+  pTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+  pTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+
   if (tvlCtx->TextToDraw != nullptr) {
     pTextViewerRenderTarget->DrawText(
-        tvlCtx->TextToDraw, std::wcslen(tvlCtx->TextToDraw) - 2,
-        pTextViewerTextFormat,
+        tvlCtx->TextToDraw, std::wcslen(tvlCtx->TextToDraw), pTextFormat,
         D2D1::RectF(32.0f, 32.0f, static_cast<float>(windowWidth - 64),
                     static_cast<float>(windowHeight - 32)),
         pTextBrush);
@@ -125,7 +138,7 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     }
 
     hr = DWriteCreateFactory(
-        DWRITE_FACTORY_TYPE_SHARED, __uuidof(pTextViewerDWriteFactory),
+        DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
         reinterpret_cast<IUnknown **>(&pTextViewerDWriteFactory));
 
     if (FAILED(hr)) {
@@ -134,21 +147,6 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
       pTextViewerDWriteFactory = nullptr;
       break;
     }
-
-    hr = pTextViewerDWriteFactory->CreateTextFormat(
-        L"Meiryo", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
-        DWRITE_FONT_STRETCH_NORMAL, 16.0f, L"", &pTextViewerTextFormat);
-
-    if (FAILED(hr)) {
-      Log->Fail(L"Failed to call CreateTextFormat", GetCurrentThreadId(),
-                __LONGFILE__);
-      pTextViewerDWriteFactory = nullptr;
-      break;
-    }
-
-    pTextViewerTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-    pTextViewerTextFormat->SetParagraphAlignment(
-        DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
     ShowWindow(hWnd, SW_SHOW);
   } break;
