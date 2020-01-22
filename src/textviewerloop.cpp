@@ -63,7 +63,7 @@ HRESULT drawTextViewer() {
 
   IDWriteTextFormat *pTextFormat{};
 
-  hr = pTextViewerDWriteFactory->CreateTextFormat(
+  HRESULT hr = pTextViewerDWriteFactory->CreateTextFormat(
       L"Meiryo", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
       DWRITE_FONT_STRETCH_NORMAL, 16.0f, L"", &pTextFormat);
 
