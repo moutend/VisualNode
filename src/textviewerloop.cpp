@@ -75,6 +75,7 @@ HRESULT drawText(wchar_t *text) {
     b = nullptr;
   }
   if (FAILED(hr)) {
+    Log->Info(L"Failed to build string", GetCurrentThreadId(), __LONGFILE__);
     return hr;
   }
 
