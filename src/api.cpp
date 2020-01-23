@@ -280,7 +280,8 @@ void __stdcall SetText(int32_t *code, wchar_t *text) {
   HRESULT hr = StringCbPrintfW(buffer, 511, L"Called SetText(text=%s)", text);
 
   if (FAILED(hr)) {
-    break;
+    *code = -1;
+    return;
   }
 
   Log->Info(buffer, GetCurrentThreadId(), __LONGFILE__);
