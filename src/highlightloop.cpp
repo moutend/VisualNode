@@ -208,7 +208,6 @@ DWORD WINAPI highlightPaintLoop(LPVOID context) {
 }
 
 DWORD WINAPI highlightLoop(LPVOID context) {
-  return S_OK;
   Log->Info(L"Start highlight loop thread", GetCurrentThreadId(), __LONGFILE__);
 
   HighlightLoopContext *ctx = static_cast<HighlightLoopContext *>(context);
