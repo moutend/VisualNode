@@ -9,7 +9,7 @@ using namespace Microsoft::WRL;
 using namespace Windows::Storage::Streams;
 
 template <class T> void SafeRelease(T **ppT) {
-  if (*ppT) {
+  if (ppT != nullptr && *ppT != nullptr) {
     (*ppT)->Release();
     *ppT = nullptr;
   }

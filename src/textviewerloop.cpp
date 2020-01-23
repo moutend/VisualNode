@@ -21,12 +21,11 @@ ID2D1Factory *pTextViewerD2d1Factory{};
 IDWriteFactory *pTextViewerDWFactory{};
 ID2D1HwndRenderTarget *pTextViewerRenderTarget{};
 
-ID2D1SolidColorBrush *pBackgroundBrush{};
-ID2D1SolidColorBrush *pBorderBrush{};
-
 HRESULT drawTextViewer() {
   D2D1_COLOR_F redColor = {1.0f, 0.0f, 0.0f, 1.0f};
   pTextViewerRenderTarget->Clear(redColor);
+
+  ID2D1SolidColorBrush *pBackgroundBrush{};
 
   pTextViewerRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF(0.125f, 0.125f, 0.125f, 1.0f), &pBackgroundBrush);
@@ -34,6 +33,8 @@ HRESULT drawTextViewer() {
   if (pBackgroundBrush == nullptr) {
     return E_FAIL;
   }
+
+  ID2D1SolidColorBrush *pBorderBrush{};
 
   pTextViewerRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF(0.875f, 0.875f, 0.875f, 1.0f), &pBorderBrush);
@@ -47,9 +48,10 @@ HRESULT drawTextViewer() {
       8.0f);
 
   pTextViewerRenderTarget->FillRoundedRectangle(&roundRect, pBackgroundBrush);
-  pBackgroundBrush->Release();
-
   pTextViewerRenderTarget->DrawRoundedRectangle(&roundRect, pBorderBrush, 2.0f);
+
+  SafeRelease(&pBackgroundBrush);
+  SafeRelease(&pBorderBrush);
 
   return S_OK;
 }
@@ -171,17 +173,16 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     if (FAILED(hr)) {
       Log->Fail(L"Failed to paint text viewer", GetCurrentThreadId(),
                 __LONGFILE__);
-    } else {
-      SafeRelease(&pBackgroundBrush);
-      SafeRelease(&pBorderBrush);
     }
+  }
+
     pTextViewerRenderTarget->EndDraw();
     EndPaint(hWnd, &paintStruct);
   }
-    return 0;
-  }
+  return 0;
+}
 
-  return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
+return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 struct TextViewerPaintLoopContext {
@@ -227,9 +228,6 @@ DWORD WINAPI textViewerPaintLoop(LPVOID context) {
     if (FAILED(hr)) {
       Log->Fail(L"Failed to paint text viewer", GetCurrentThreadId(),
                 __LONGFILE__);
-    } else {
-      SafeRelease(&pBackgroundBrush);
-      SafeRelease(&pBorderBrush);
     }
 
     pTextViewerRenderTarget->EndDraw();
