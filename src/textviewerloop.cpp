@@ -174,15 +174,14 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
       Log->Fail(L"Failed to paint text viewer", GetCurrentThreadId(),
                 __LONGFILE__);
     }
-  }
 
     pTextViewerRenderTarget->EndDraw();
     EndPaint(hWnd, &paintStruct);
   }
-  return 0;
-}
+    return 0;
+  }
 
-return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
+  return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 struct TextViewerPaintLoopContext {
