@@ -339,10 +339,11 @@ DWORD WINAPI textViewerLoop(LPVOID context) {
       break;
     }
 
-    hWnd = CreateWindowEx(
-        WS_EX_COMPOSITED | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST,
-        wndClass.lpszClassName, windowName, WS_POPUP, windowLeft, windowTop,
-        windowWidth, windowHeight, nullptr, nullptr, hInstance, nullptr);
+    hWnd = CreateWindowEx(WS_EX_NOACTIVATE | WS_EX_COMPOSITED | WS_EX_LAYERED |
+                              WS_EX_TRANSPARENT | WS_EX_TOPMOST,
+                          wndClass.lpszClassName, windowName, WS_POPUP,
+                          windowLeft, windowTop, windowWidth, windowHeight,
+                          nullptr, nullptr, hInstance, nullptr);
 
     SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
