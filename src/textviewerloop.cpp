@@ -21,11 +21,13 @@ ID2D1Factory *pTextViewerD2d1Factory{};
 IDWriteFactory *pTextViewerDWFactory{};
 ID2D1HwndRenderTarget *pTextViewerRenderTarget{};
 
+ID2D1SolidColorBrush *pBackgroundBrush{};
+ID2D1SolidColorBrush *pBorderBrush{};
+
 HRESULT drawTextViewer() {
   D2D1_COLOR_F redColor = {1.0f, 0.0f, 0.0f, 1.0f};
   pTextViewerRenderTarget->Clear(redColor);
 
-  ID2D1SolidColorBrush *pBackgroundBrush{};
   pTextViewerRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF(0.125f, 0.125f, 0.125f, 1.0f), &pBackgroundBrush);
 
@@ -33,7 +35,6 @@ HRESULT drawTextViewer() {
     return E_FAIL;
   }
 
-  ID2D1SolidColorBrush *pBorderBrush{};
   pTextViewerRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF(0.875f, 0.875f, 0.875f, 1.0f), &pBorderBrush);
 
@@ -49,9 +50,6 @@ HRESULT drawTextViewer() {
   pBackgroundBrush->Release();
 
   pTextViewerRenderTarget->DrawRoundedRectangle(&roundRect, pBorderBrush, 2.0f);
-
-  SafeRelease(&pBackgroundBrush);
-  SafeRelease(&pBorderBrush);
 
   return S_OK;
 }
@@ -155,13 +153,15 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     BeginPaint(hWnd, &paintStruct);
     pTextViewerRenderTarget->BeginDraw();
 
-    /*@@@begin
-        if (FAILED(drawTextViewer())) {
-          Log->Fail(L"Failed to paint text viewer", GetCurrentThreadId(),
-                    __LONGFILE__);
-        }
-    @@@end */
+    HRESULT hr = drawTextViewer();
 
+    if (FAILED(hr)) {
+      Log->Fail(L"Failed to paint text viewer", GetCurrentThreadId(),
+                __LONGFILE__);
+    } else {
+      SafeRelease(&pBackgroundBrush);
+      SafeRelease(&pBorderBrush);
+    }
     pTextViewerRenderTarget->EndDraw();
     EndPaint(hWnd, &paintStruct);
   }
@@ -205,12 +205,15 @@ DWORD WINAPI textViewerPaintLoop(LPVOID context) {
     HDC hDC = GetDC(ctx->TargetWindow);
     pTextViewerRenderTarget->BeginDraw();
 
-    /* @@@begin
-        if (FAILED(drawTextViewer())) {
-          Log->Fail(L"Failed to paint text viewer", GetCurrentThreadId(),
-                    __LONGFILE__);
-        }
-        */
+    HRESULT hr = drawTextViewer();
+
+    if (FAILED(hr)) {
+      Log->Fail(L"Failed to paint text viewer", GetCurrentThreadId(),
+                __LONGFILE__);
+    } else {
+      SafeRelease(&pBackgroundBrush);
+      SafeRelease(&pBorderBrush);
+    }
 
     pTextViewerRenderTarget->EndDraw();
     ReleaseDC(ctx->TargetWindow, hDC);
