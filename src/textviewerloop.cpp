@@ -66,7 +66,7 @@ HRESULT drawText(wchar_t *text) {
     bufferLen = std::wcslen(text);
     std::wmemcpy(buffer, text, bufferLen);
   } else {
-    hr = StringCbPrintfW(buffer, 36, L"%s ...", text);
+    std::wmemcpy(buffer, text, 32);
   }
   if (FAILED(hr)) {
     return hr;
