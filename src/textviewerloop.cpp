@@ -57,6 +57,21 @@ HRESULT drawTextViewer() {
 }
 
 HRESULT drawText(wchar_t *text) {
+  HRESULT hr{};
+
+  size_t bufferLen{36};
+  wchar_t *buffer = wchar_t[37] {}
+
+  if (std::wcslen(text) <= 32) {
+    bufferLen = std::wcslen(text);
+    std::wmemcpy(buffer, text, bufferLen);
+  } else {
+    hr = StringCbPrintfW(buffer, 36, L"%s ...", text);
+  }
+  if (FAILED(hr)) {
+    return hr;
+  }
+
   ID2D1SolidColorBrush *pBrush{};
 
   pTextViewerRenderTarget->CreateSolidColorBrush(
@@ -77,14 +92,18 @@ HRESULT drawText(wchar_t *text) {
   }
 
   pTextViewerRenderTarget->DrawText(
-      text, std::wcslen(text), pTextFormat,
+      buffer, bufferLen, pTextFormat,
       &D2D1::RectF(32, 32, windowWidth - 32, windowHeight - 32), pBrush);
 
   SafeRelease(&pTextFormat);
   SafeRelease(&pBrush);
 
+  delete[] buffer;
+  buffer = nullptr;
+
   return S_OK;
 }
+
 LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                       LPARAM lParam) {
   switch (uMsg) {
