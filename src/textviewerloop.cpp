@@ -104,6 +104,16 @@ HRESULT drawText(wchar_t *text) {
   SafeRelease(&pTextFormat);
   SafeRelease(&pBrush);
 
+  wchar_t *message = new wchar_t[256]{};
+
+  hr = StringCbPrintfW(message, 255, L"Showing '%s'", buffer);
+
+  if (FAILED(hr)) {
+    return hr;
+  }
+
+  Log->Info(message, GetCurrentThreadId(), __LONGFILE__);
+
   delete[] buffer;
   buffer = nullptr;
 
