@@ -159,14 +159,6 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
       Log->Fail(L"Failed to paint text viewer", GetCurrentThreadId(),
                 __LONGFILE__);
     }
-    /*
-    if (FAILED(drawText(L" "))) {
-      Log->Fail(L"Failed to paint text", GetCurrentThreadId(), __LONGFILE__);
-    }
-    if (FAILED(drawText(tvlCtx->TextToDraw))) {
-      Log->Fail(L"Failed to paint text", GetCurrentThreadId(), __LONGFILE__);
-    }
-    */
 
     pTextViewerRenderTarget->EndDraw();
     EndPaint(hWnd, &paintStruct);
@@ -215,14 +207,6 @@ DWORD WINAPI textViewerPaintLoop(LPVOID context) {
       Log->Fail(L"Failed to paint text viewer", GetCurrentThreadId(),
                 __LONGFILE__);
     }
-    /*
-    if (FAILED(drawText(L" "))) {
-      Log->Fail(L"Failed to paint text", GetCurrentThreadId(), __LONGFILE__);
-    }
-    if (FAILED(drawText(tvlCtx->TextToDraw))) {
-      Log->Fail(L"Failed to paint text", GetCurrentThreadId(), __LONGFILE__);
-    }
-    */
 
     pTextViewerRenderTarget->EndDraw();
     ReleaseDC(ctx->TargetWindow, hDC);
@@ -235,7 +219,6 @@ DWORD WINAPI textViewerPaintLoop(LPVOID context) {
 }
 
 DWORD WINAPI textViewerLoop(LPVOID context) {
-return S_OK;
   Log->Info(L"Start text viewer loop thread", GetCurrentThreadId(),
             __LONGFILE__);
 
