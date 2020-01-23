@@ -64,7 +64,7 @@ HRESULT drawTextViewer() {
   if (pBrush != nullptr && pTextFormat != nullptr) {
     pTextViewerRenderTarget->DrawText(
         tvlCtx->TextToDraw, std::wcslen(tvlCtx->TextToDraw), pTextFormat,
-        &D2D1::RectF(32, 32, 300, 64), pBrush);
+        &D2D1::RectF(32, 32, 480, 64), pBrush);
   }
 
   SafeRelease(&pTextFormat);
