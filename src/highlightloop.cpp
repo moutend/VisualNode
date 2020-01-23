@@ -26,7 +26,7 @@ HRESULT drawHighlightRectangle() {
   }
 
   ID2D1SolidColorBrush *pExteriorBrush{};
-  pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.5f, 0.5f, 0.5f, 1.0f),
+  pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.375f, 0.375f, 0.375f, 1.0f),
                                        &pExteriorBrush);
 
   if (pExteriorBrush == nullptr) {
