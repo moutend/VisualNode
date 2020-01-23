@@ -60,7 +60,7 @@ HRESULT drawText(wchar_t *text) {
   HRESULT hr{};
 
   size_t bufferLen{36};
-  wchar_t *buffer = wchar_t[37] {}
+  wchar_t *buffer = new wchar_t[37]{};
 
   if (std::wcslen(text) <= 32) {
     bufferLen = std::wcslen(text);
