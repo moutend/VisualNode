@@ -275,7 +275,7 @@ void __stdcall SetText(int32_t *code, wchar_t *text) {
     return;
   }
 
-  wchar_t *buffer = new wchar[512]{};
+  wchar_t *buffer = new wchar_t[512]{};
 
   HRESULT hr = StringCbPrintfW(buffer, 511, L"Called SetText(text=%s)", text);
 
