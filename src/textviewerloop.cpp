@@ -1,4 +1,4 @@
-#include <cpplogger/cpplogger>
+#include <cpplogger/cpplogger.h>
 #include <cstring>
 #include <windows.h>
 
