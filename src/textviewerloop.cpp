@@ -95,6 +95,8 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                    &pTextViewerD2d1Factory);
 
     if (FAILED(hr)) {
+      Log->Fail(L"Failed to call D2D1CreateFactory", GetCurrentThreadId(),
+                __LONGFILE__);
       break;
     }
 
@@ -112,6 +114,8 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
         &pTextViewerRenderTarget);
 
     if (FAILED(hr)) {
+      Log->Fail(L"Failed to call CreateHwndRenderTarget", GetCurrentThreadId(),
+                __LONGFILE__);
       break;
     }
 
@@ -120,6 +124,8 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
         reinterpret_cast<IUnknown **>(&pTextViewerDWFactory));
 
     if (FAILED(hr)) {
+      Log->Fail(L"Failed to call DWriteCreateFactory", GetCurrentThreadId(),
+                __LONGFILE__);
       break;
     }
 
@@ -147,6 +153,13 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     return 0;
   case WM_PAINT: {
     Log->Info(L"Received WM_PAINT", GetCurrentThreadId(), __LONGFILE__);
+
+    if (pTextViewerRenderTarget == nullptr ||
+        pTextViewerD2d1Factory == nullptr) {
+      Log->Fail(L"Direct2D painting is not available", GetCurrentThreadId(),
+                __LONGFILE__);
+      break;
+    }
 
     D2D1_SIZE_F targetSize = pTextViewerRenderTarget->GetSize();
     PAINTSTRUCT paintStruct;
@@ -194,10 +207,14 @@ DWORD WINAPI textViewerPaintLoop(LPVOID context) {
       continue;
     }
     if (ctx->TargetWindow == nullptr) {
+      Log->Fail(L"Text viewer window is not created", GetCurrentThreadId(),
+                __LONGFILE__);
       continue;
     }
     if (pTextViewerRenderTarget == nullptr ||
         pTextViewerD2d1Factory == nullptr) {
+      Log->Fail(L"Direct2D painting is not available", GetCurrentThreadId(),
+                __LONGFILE__);
       continue;
     }
 
