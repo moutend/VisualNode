@@ -66,19 +66,17 @@ HRESULT drawText(wchar_t *text) {
     bufferLen = std::wcslen(text);
     std::wmemcpy(buffer, text, bufferLen);
   } else {
-    wchar_t *b = new wchar_t[31]{};
-    std::wmemcpy(b, text, 29);
+    wchar_t *b = new wchar_t[33]{};
+    std::wmemcpy(b, text, 31);
 
-    hr = StringCbPrintfW(buffer, 36, L"%s ...", b);
+    hr = StringCbPrintfW(buffer, 72, L"%s ...", b);
 
     delete[] b;
     b = nullptr;
-
-    if (FAILED(hr)) {
-      Log->Fail(L"Failed to build string", GetCurrentThreadId(), __LONGFILE__);
-      Log->Fail(buffer, GetCurrentThreadId(), __LONGFILE__);
-      return hr;
-    }
+  }
+  if (FAILED(hr)) {
+    Log->Fail(L"Failed to build string", GetCurrentThreadId(), __LONGFILE__);
+    return hr;
   }
 
   ID2D1SolidColorBrush *pBrush{};
