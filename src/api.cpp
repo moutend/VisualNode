@@ -277,7 +277,8 @@ void __stdcall SetText(int32_t *code, wchar_t *text) {
 
   wchar_t *buffer = new wchar_t[512]{};
 
-  HRESULT hr = StringCbPrintfW(buffer, 511, L"Called SetText(text=%s)", text);
+  HRESULT hr = StringCbPrintfW(buffer, 511, L"Called SetText(text[%d]=%s)",
+                               std::wcslen(text), text);
 
   if (FAILED(hr)) {
     *code = -1;
