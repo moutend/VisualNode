@@ -25,14 +25,20 @@ HRESULT drawHighlightRectangle() {
     return S_OK;
   }
 
-  ID2D1SolidColorBrush *pBrush{};
-  pRenderTarget->CreateSolidColorBrush(
-      D2D1::ColorF(
-          highlightRect->BorderColor->Red, highlightRect->BorderColor->Green,
-          highlightRect->BorderColor->Blue, highlightRect->BorderColor->Alpha),
-      &pBrush);
+  ID2D1SolidColorBrush *pExteriorBrush{};
+  pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.5f, 0.5f, 0.5f, 1.0f),
+                                       &pExteriorBrush);
 
-  if (pBrush == nullptr) {
+  if (pExteriorBrush == nullptr) {
+    return E_FAIL;
+  }
+
+  ID2D1SolidColorBrush *pInteriorBrush{};
+
+  pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f),
+                                       &pInteriorBrush);
+
+  if (pInteriorBrush == nullptr) {
     return E_FAIL;
   }
 
@@ -40,24 +46,22 @@ HRESULT drawHighlightRectangle() {
       D2D1::RoundedRect(D2D1::RectF(highlightRect->Left, highlightRect->Top,
                                     highlightRect->Left + highlightRect->Width,
                                     highlightRect->Top + highlightRect->Height),
-                        highlightRect->Radius, highlightRect->Radius);
+                        8.0f, 8.0f);
 
-  pRenderTarget->DrawRoundedRectangle(&roundRect, pBrush,
-                                      highlightRect->BorderThickness);
-  pBrush->Release();
+  pRenderTarget->DrawRoundedRectangle(&roundRect, pExteriorBrush, 5.5f);
+  pRenderTarget->DrawRoundedRectangle(&roundRect, pInteriorBrush, 3.0f);
+
+  SafeRelease(&pExteriorBrush);
+  SafeRelease(&pInteriorBrush);
 
   wchar_t *buffer = new wchar_t[512]{};
 
-  HRESULT hr = StringCbPrintfW(
-      buffer, 511,
-      L"Highlight rectangle = {x:%.1f, y:%.1f, width:%.1f, "
-      L"height:%.1f, radius:%.1f, border:%.1f, "
-      L"color:(red:%.1f, green:%.1f, blue:%.1f, alpha:%.1f)}",
-      highlightRect->Left, highlightRect->Top, highlightRect->Width,
-      highlightRect->Height, highlightRect->Radius,
-      highlightRect->BorderThickness, highlightRect->BorderColor->Red,
-      highlightRect->BorderColor->Green, highlightRect->BorderColor->Blue,
-      highlightRect->BorderColor->Alpha);
+  HRESULT hr =
+      StringCbPrintfW(buffer, 511,
+                      L"Highlight rectangle = {x:%.1f, y:%.1f, width:%.1f, "
+                      L"height:%.1f}",
+                      highlightRect->Left, highlightRect->Top,
+                      highlightRect->Width, highlightRect->Height);
 
   if (FAILED(hr)) {
     return hr;
