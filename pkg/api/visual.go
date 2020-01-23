@@ -49,18 +49,10 @@ func GetVisualDisable(w http.ResponseWriter, r *http.Request) error {
 }
 
 type postVisualHighlightRequest struct {
-	Left            float32 `json:"left"`
-	Top             float32 `json:"top"`
-	Width           float32 `json:"width"`
-	Height          float32 `json:"height"`
-	Radius          float32 `json:"radius"`
-	BorderThickness float32 `json:"borderThickness"`
-	BorderColor     struct {
-		Red   float32 `json:"red"`
-		Green float32 `json:"green"`
-		Blue  float32 `json:"blue"`
-		Alpha float32 `json:"alpha"`
-	} `json:"borderColor"`
+	Left   float32 `json:"left"`
+	Top    float32 `json:"top"`
+	Width  float32 `json:"width"`
+	Height float32 `json:"height"`
 }
 
 func PostVisualHighlight(w http.ResponseWriter, r *http.Request) error {
@@ -82,22 +74,12 @@ func PostVisualHighlight(w http.ResponseWriter, r *http.Request) error {
 
 	log.Printf("req=%+v\n", req)
 
-	borderColor := types.RGBAColor{}
-
-	borderColor.Red = math.Float32bits(req.BorderColor.Red)
-	borderColor.Green = math.Float32bits(req.BorderColor.Green)
-	borderColor.Blue = math.Float32bits(req.BorderColor.Blue)
-	borderColor.Alpha = math.Float32bits(req.BorderColor.Alpha)
-
 	rect := types.HighlightRectangle{}
 
 	rect.Left = math.Float32bits(req.Left)
 	rect.Top = math.Float32bits(req.Top)
 	rect.Width = math.Float32bits(req.Width)
 	rect.Height = math.Float32bits(req.Height)
-	rect.Radius = math.Float32bits(req.Radius)
-	rect.BorderThickness = math.Float32bits(req.BorderThickness)
-	rect.BorderColor = uintptr(unsafe.Pointer(&borderColor))
 
 	dll.ProcSetHighlightRectangle.Call(uintptr(unsafe.Pointer(&code)), uintptr(unsafe.Pointer(&rect)))
 
