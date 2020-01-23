@@ -48,7 +48,7 @@ HRESULT drawHighlightRectangle() {
                                     highlightRect->Top + highlightRect->Height),
                         8.0f, 8.0f);
 
-  pRenderTarget->DrawRoundedRectangle(&roundRect, pExteriorBrush, 5.5f);
+  pRenderTarget->DrawRoundedRectangle(&roundRect, pExteriorBrush, 7.5f);
   pRenderTarget->DrawRoundedRectangle(&roundRect, pInteriorBrush, 3.0f);
 
   SafeRelease(&pExteriorBrush);
