@@ -1,3 +1,4 @@
+#include <cpplogger/cpplogger>
 #include <cstring>
 #include <windows.h>
 
@@ -8,6 +9,8 @@
 #include "context.h"
 #include "textviewerloop.h"
 #include "util.h"
+
+extern Logger::Logger *Log;
 
 TextViewerLoopContext *tvlCtx{};
 
@@ -74,6 +77,8 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                       LPARAM lParam) {
   switch (uMsg) {
   case WM_CREATE: {
+    Log->Info(L"Received WM_CREATE", GetCurrentThreadId(), __LONGFILE__);
+
     CREATESTRUCT *createStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
 
     HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,
@@ -112,19 +117,27 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     ShowWindow(hWnd, SW_SHOW);
   } break;
   case WM_DISPLAYCHANGE: {
+    Log->Info(L"Received WM_DISPLAYCHANGE", GetCurrentThreadId(), __LONGFILE__);
+
     DestroyWindow(hWnd);
   } break;
   case WM_DESTROY: {
+    Log->Info(L"Received WM_DESTROY", GetCurrentThreadId(), __LONGFILE__);
+
     SafeRelease(&pTextViewerDWFactory);
     SafeRelease(&pTextViewerRenderTarget);
     SafeRelease(&pTextViewerD2d1Factory);
     ::PostQuitMessage(0);
   } break;
   case WM_CLOSE: {
+    Log->Info(L"Received WM_CLOSE", GetCurrentThreadId(), __LONGFILE__);
+
     // Ignore this message.
   }
     return 0;
   case WM_PAINT: {
+    Log->Info(L"Received WM_PAINT", GetCurrentThreadId(), __LONGFILE__);
+
     D2D1_SIZE_F targetSize = pTextViewerRenderTarget->GetSize();
     PAINTSTRUCT paintStruct;
     BeginPaint(hWnd, &paintStruct);
@@ -192,6 +205,9 @@ DWORD WINAPI textViewerPaintLoop(LPVOID context) {
 }
 
 DWORD WINAPI textViewerLoop(LPVOID context) {
+  Log->Info(L"Start text viewer loop thread", GetCurrentThreadId(),
+            __LONGFILE__);
+
   tvlCtx = static_cast<TextViewerLoopContext *>(context);
 
   if (tvlCtx == nullptr) {
@@ -243,6 +259,8 @@ DWORD WINAPI textViewerLoop(LPVOID context) {
     if (FAILED(hr)) {
       break;
     }
+
+    Log->Info(buffer, GetCurrentThreadId(), __LONGFILE__);
 
     delete[] buffer;
     buffer = nullptr;
@@ -298,6 +316,8 @@ DWORD WINAPI textViewerLoop(LPVOID context) {
   SafeCloseHandle(&textViewerPaintLoopThread);
 
   CoUninitialize();
+
+  Log->Info(L"End text viewer loop thread", GetCurrentThreadId(), __LONGFILE__);
 
   return S_OK;
 }

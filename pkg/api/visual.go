@@ -142,7 +142,7 @@ func PostVisualText(w http.ResponseWriter, r *http.Request) error {
 	dll.ProcSetText.Call(uintptr(unsafe.Pointer(&code)), uintptr(unsafe.Pointer(u16ptr)))
 
 	if code != 0 {
-		log.Println("Failed to call SetHighlightRectangle (code=%v)", code)
+		log.Println("Failed to call SetText(code=%v)", code)
 		return fmt.Errorf("Internal error")
 	}
 	if _, err := io.WriteString(w, "{}"); err != nil {
