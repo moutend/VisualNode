@@ -49,30 +49,42 @@ HRESULT drawTextViewer() {
   pBackgroundBrush->Release();
 
   pTextViewerRenderTarget->DrawRoundedRectangle(&roundRect, pBorderBrush, 2.0f);
-  pBorderBrush->Release();
 
+  SafeRelease(&pBackgroundBrush);
+  SafeRelease(&pBorderBrush);
+
+  return S_OK;
+}
+
+HRESULT drawText(wchar_t *text) {
   ID2D1SolidColorBrush *pBrush{};
+
   pTextViewerRenderTarget->CreateSolidColorBrush(
       D2D1::ColorF(D2D1::ColorF::White), &pBrush);
+
+  if (pBrush == nullptr) {
+    return E_FAIL;
+  }
 
   IDWriteTextFormat *pTextFormat{};
 
   pTextViewerDWFactory->CreateTextFormat(
       L"Meiryo", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
-      DWRITE_FONT_STRETCH_NORMAL, 24, L"", &pTextFormat);
+      DWRITE_FONT_STRETCH_NORMAL, 16, L"", &pTextFormat);
 
-  if (pBrush != nullptr && pTextFormat != nullptr) {
-    pTextViewerRenderTarget->DrawText(
-        tvlCtx->TextToDraw, std::wcslen(tvlCtx->TextToDraw), pTextFormat,
-        &D2D1::RectF(32, 32, 480, 64), pBrush);
+  if (pTextFormat == nullptr) {
+    return E_FAIL;
   }
+
+  pTextViewerRenderTarget->DrawText(
+      text, std::wcslen(text), pTextFormat,
+      &D2D1::RectF(32, 32, windowWidth - 32, windowHeight - 32), pBrush);
 
   SafeRelease(&pTextFormat);
   SafeRelease(&pBrush);
 
   return S_OK;
 }
-
 LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
                                       LPARAM lParam) {
   switch (uMsg) {
@@ -144,7 +156,14 @@ LRESULT CALLBACK textViewerWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     pTextViewerRenderTarget->BeginDraw();
 
     if (FAILED(drawTextViewer())) {
-      // todo
+      Log->Fail(L"Failed to paint text viewer", GetCurrentThreadId(),
+                __LONGFILE__);
+    }
+    if (FAILED(L" ")) {
+      Log->Fail(L"Failed to paint text", GetCurrentThreadId(), __LONGFILE__);
+    }
+    if (FAILED(drawText(tvlCtx->TextToDraw))) {
+      Log->Fail(L"Failed to paint text", GetCurrentThreadId(), __LONGFILE__);
     }
 
     pTextViewerRenderTarget->EndDraw();
@@ -191,7 +210,14 @@ DWORD WINAPI textViewerPaintLoop(LPVOID context) {
     pTextViewerRenderTarget->BeginDraw();
 
     if (FAILED(drawTextViewer())) {
-      // todo
+      Log->Fail(L"Failed to paint text viewer", GetCurrentThreadId(),
+                __LONGFILE__);
+    }
+    if (FAILED(drawText(L" "))) {
+      Log->Fail(L"Failed to paint text", GetCurrentThreadId(), __LONGFILE__);
+    }
+    if (FAILED(drawText(tvlCtx->TextToDraw))) {
+      Log->Fail(L"Failed to paint text", GetCurrentThreadId(), __LONGFILE__);
     }
 
     pTextViewerRenderTarget->EndDraw();
