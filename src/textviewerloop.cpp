@@ -235,6 +235,7 @@ DWORD WINAPI textViewerPaintLoop(LPVOID context) {
 }
 
 DWORD WINAPI textViewerLoop(LPVOID context) {
+return S_OK;
   Log->Info(L"Start text viewer loop thread", GetCurrentThreadId(),
             __LONGFILE__);
 
