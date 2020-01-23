@@ -69,7 +69,7 @@ HRESULT drawText(wchar_t *text) {
     wchar_t *b = new wchar_t[31]{};
     std::wmemcpy(b, text, 29);
 
-    hr = StringCbPrintfW(buffer, 36, L"%s ...", b);
+    hr = StringCbPrintfW(buffer, 36, L"%s", b);
 
     delete[] b;
     b = nullptr;
